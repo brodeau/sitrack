@@ -65,8 +65,8 @@ def __argument_parsing__():
     parser.add_argument('-N', '--ncnf' , default='NANUK4',     help='name of the horizontak NEMO config used')
     parser.add_argument('-p', '--plot' , type=int, default=0,  help='how often, in terms of model records, we plot the positions on a map')
     parser.add_argument('-R', '--hres' , type=int, default=20, help='horizontal resolution of the grid [km] (default=20km)')
-    parser.add_argument('-u', '--uname' , default='u_ice',     help='name of U-velocity component in input file (default: u_ice)')
-    parser.add_argument('-v', '--vname' , default='v_ice',     help='name of V-velocity component in input file (default: v_ice)')
+    parser.add_argument('-u', '--uname' , default='u_ice-u',   help='name of U-velocity component in input file (default: u_ice)')
+    parser.add_argument('-v', '--vname' , default='v_ice-v',   help='name of V-velocity component in input file (default: v_ice)')
     parser.add_argument('-c', '--cname' , default='siconc',    help='name of sea-ice concentration in input file (default: siconc)')
     #
     args = parser.parse_args()

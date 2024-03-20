@@ -92,7 +92,7 @@ def GetModelGrid( fNCmeshmask, alsoF=False ):
             if alsoF:
                 kmaskf = id_mm.variables['fmask'][:,:]
             #
-        elif ndim==4:
+        elif ndim==3:
             kmaskt = id_mm.variables['tmask'][0,0,:,:]
             zlonF  = id_mm.variables['glamf'][0,:,:]
             zlatF  = id_mm.variables['gphif'][0,:,:]
@@ -105,6 +105,22 @@ def GetModelGrid( fNCmeshmask, alsoF=False ):
                 zXt = id_mm.variables[nm_x_t][0,:,:]
                 zYf = id_mm.variables[nm_y_f][0,:,:]
                 zXf = id_mm.variables[nm_x_f][0,:,:]                
+            if alsoF:
+                kmaskf = id_mm.variables['fmask'][0,0,:,:]
+            #
+        elif ndim==4:
+            kmaskt = id_mm.variables['tmask'][0,0,:,:]
+            zlonF  = id_mm.variables['glamf'][0,0,:,:]
+            zlatF  = id_mm.variables['gphif'][0,0,:,:]
+            zlonT  = id_mm.variables['glamt'][0,0,:,:]
+            zlatT  = id_mm.variables['gphit'][0,0,:,:]
+            ze1T   = id_mm.variables['e1t'][0,0,:,:] / 1000. ; # km
+            ze2T   = id_mm.variables['e2t'][0,0,:,:] / 1000. ; # km
+            if l_CartesianCoordPresent:
+                zYt = id_mm.variables[nm_y_t][0,0,:,:]
+                zXt = id_mm.variables[nm_x_t][0,0,:,:]
+                zYf = id_mm.variables[nm_y_f][0,0,:,:]
+                zXf = id_mm.variables[nm_x_f][0,0,:,:]                
             if alsoF:
                 kmaskf = id_mm.variables['fmask'][0,0,:,:]
         else:
@@ -141,12 +157,27 @@ def GetModelUVGrid( fNCmeshmask ):
 
     chck4f( fNCmeshmask)
 
-    # Reading mesh metrics into mesh-mask file:
+    # Reading mesh metrics into mesh-mask file: lili
     with Dataset(fNCmeshmask) as id_mm:
-        zlonV = id_mm.variables['glamv'][0,:,:]
-        zlatV = id_mm.variables['gphiv'][0,:,:]
-        zlonU = id_mm.variables['glamu'][0,:,:]
-        zlatU = id_mm.variables['gphiu'][0,:,:]
+        ndim = len(id_mm.variables['glamu'].shape)
+        if ndim==2:
+            zlonV = id_mm.variables['glamv'][:,:]
+            zlatV = id_mm.variables['gphiv'][:,:]
+            zlonU = id_mm.variables['glamu'][:,:]
+            zlatU = id_mm.variables['gphiu'][:,:]
+        elif ndim==3:
+            zlonV = id_mm.variables['glamv'][0,:,:]
+            zlatV = id_mm.variables['gphiv'][0,:,:]
+            zlonU = id_mm.variables['glamu'][0,:,:]
+            zlatU = id_mm.variables['gphiu'][0,:,:]
+        elif ndim==4:
+            zlonV = id_mm.variables['glamv'][0,0,:,:]
+            zlatV = id_mm.variables['gphiv'][0,0,:,:]
+            zlonU = id_mm.variables['glamu'][0,0,:,:]
+            zlatU = id_mm.variables['gphiu'][0,0,:,:]
+        else:
+            print(' ERROR [GetModelUVGrid]: unexpected number of dimmensions for variable `glamu` !')
+            exit(0)
 
     (nj,ni) = np.shape(zlonV)
 

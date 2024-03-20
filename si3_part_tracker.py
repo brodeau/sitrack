@@ -64,7 +64,7 @@ def __argument_parsing__():
     parser.add_argument('-F', '--force2dtime',  action=ap.BooleanOptionalAction, help='buoys are not using the same common time axis, so time array will be 2D! (default=False)')
     parser.add_argument('-N', '--ncnf' , default='NANUK4',     help='name of the horizontak NEMO config used')
     parser.add_argument('-p', '--plot' , type=int, default=0,  help='how often, in terms of model records, we plot the positions on a map')
-    parser.add_argument('-R', '--hres' , type=int, default=20, help='horizontal resolution of the grid [km] (default=20km)')
+    parser.add_argument('-R', '--hres' , type=int, default=10, help='horizontal resolution of the grid [km] (default=20km)')
     parser.add_argument('-u', '--uname' , default='u_ice-u',   help='name of U-velocity component in input file (default: u_ice)')
     parser.add_argument('-v', '--vname' , default='v_ice-v',   help='name of V-velocity component in input file (default: v_ice)')
     parser.add_argument('-c', '--cname' , default='siconc',    help='name of sea-ice concentration in input file (default: siconc)')
@@ -174,7 +174,7 @@ if __name__ == '__main__':
         #    ==> which means we are likely to do replicate the exact same thing using the model data
         #    ==> so we stop at `idateSeedB` !!!
         date_stop = idateSeedB
-        print("Nuh! idateSeedB, idateSeedA =", idateSeedB, idateSeedA)
+        #print("Nuh! idateSeedB, idateSeedA =", idateSeedB, idateSeedA)
     
     date_stop = int(date_stop)    
     print(' *** Date at which the tracking should be stopped: '+e2c(date_stop)+'\n')

@@ -64,7 +64,7 @@ def __argument_parsing__():
     parser.add_argument('-F', '--force2dtime',  action=ap.BooleanOptionalAction, help='buoys are not using the same common time axis, so time array will be 2D! (default=False)')
     parser.add_argument('-N', '--ncnf' , default='NANUK4',     help='name of the horizontak NEMO config used')
     parser.add_argument('-p', '--plot' , type=int, default=0,  help='how often, in terms of model records, we plot the positions on a map')
-    parser.add_argument('-R', '--hres' , type=int, default=10, help='horizontal resolution of the grid [km] (default=20km)')
+    parser.add_argument('-R', '--hres' ,  default="10km",      help='horizontal resolution of the grid [km] (default="10km")')
     parser.add_argument('-u', '--uname' , default='u_ice-u',   help='name of U-velocity component in input file (default: u_ice)')
     parser.add_argument('-v', '--vname' , default='v_ice-v',   help='name of V-velocity component in input file (default: v_ice)')
     parser.add_argument('-c', '--cname' , default='siconc',    help='name of sea-ice concentration in input file (default: siconc)')
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     print('##########################################################\n')
 
 
-    cf_uv, cf_mm, fNCseed,   gridType, jrecSeed, cdate_stop, CONF, ifreq_plot, ireskm, cv_u, cv_v, cv_A = __argument_parsing__()
+    cf_uv, cf_mm, fNCseed,   gridType, jrecSeed, cdate_stop, CONF, ifreq_plot, csfkm, cv_u, cv_v, cv_A = __argument_parsing__()
 
     print(' lUse2DTime =',lUse2DTime)
     print('cf_uv =',cf_uv)
@@ -110,14 +110,16 @@ if __name__ == '__main__':
     sit.chck4f(cf_uv)
     sit.chck4f(cf_mm)
     sit.chck4f(fNCseed)
+
+    if csfkm[-2:] != 'km':
+        print('ERROR: resolution string must end with "km"!'); exit(0)
+    
     
     if not gridType in ['C','A']:
-        print('ERROR: only "C" and "A" grids are supported for now...')
-        exit(0)
+        print('ERROR: only "C" and "A" grids are supported for now...'); exit(0)
     
     if gridType=='C' and not iUVstrategy in [1,2]:
-        print('ERROR: `iUVstrategy` with a value of '+str(iUVstrategy)+' is unknown!')
-        exit(0)
+        print('ERROR: `iUVstrategy` with a value of '+str(iUVstrategy)+' is unknown!'); exit(0)
 
     
     fNCseedBN = path.basename(fNCseed)
@@ -132,10 +134,13 @@ if __name__ == '__main__':
             exit(0)
 
     # Nominal horizontal resolution:
-    creskm = str(ireskm)
+    cc = split('-',csfkm)
+    if len(cc)==2:
+        creskm = cc[1]
     print(' * Horizontal resolution of the grid (as specified at command line): '+creskm+' km')
-    csfkm = '_'+creskm+'km'
-
+    #print('LOLO: creskm, csfkm =', creskm, csfkm); exit(0)    
+    csfkm = '_'+csfkm
+    
     cdtbin = '_'+str(int(rdt/3600.))+'h'
     
      
@@ -186,10 +191,7 @@ if __name__ == '__main__':
         print(' QUITTING since no matching model records!')
         exit(0)
 
-    crk = creskm
-    cc = split('-',creskm)
-    if len(cc)==2: crk = cc[1]
-    cfdir = './figs/tracking/'+crk+'km'   
+    cfdir = './figs/tracking/'+creskm
     if iplot>0 and not path.exists(cfdir):
         makedirs( cfdir, exist_ok=True )
     for cd in [ 'seed', 'nc', 'npz' ]:

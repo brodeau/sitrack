@@ -157,7 +157,7 @@ def GetModelUVGrid( fNCmeshmask ):
 
     chck4f( fNCmeshmask)
 
-    # Reading mesh metrics into mesh-mask file: lili
+    # Reading mesh metrics into mesh-mask file:
     with Dataset(fNCmeshmask) as id_mm:
         ndim = len(id_mm.variables['glamu'].shape)
         if ndim==2:

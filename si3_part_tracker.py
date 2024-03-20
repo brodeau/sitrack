@@ -107,6 +107,10 @@ if __name__ == '__main__':
         print('cdate_stop =',cdate_stop)
     print('\n')
 
+    sit.chck4f(cf_uv)
+    sit.chck4f(cf_mm)
+    sit.chck4f(fNCseed)
+    
     if not gridType in ['C','A']:
         print('ERROR: only "C" and "A" grids are supported for now...')
         exit(0)

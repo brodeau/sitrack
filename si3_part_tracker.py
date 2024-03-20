@@ -111,6 +111,16 @@ if __name__ == '__main__':
     sit.chck4f(cf_mm)
     sit.chck4f(fNCseed)
 
+
+    fNCseedBN = path.basename(fNCseed)
+    print(fNCseed)
+
+    cc = split('_',fNCseedBN)
+    cdtbin = cc[-4]
+    if cdtbin[:2] != 'dt':
+        print('ERROR: guessed wron binning info from seeding file name! => cdtbin = '+cdtbin); exit(0)
+    cdtbin = '_'+cdtbin
+    
     if csfkm[-2:] != 'km':
         print('ERROR: resolution string must end with "km"!'); exit(0)
     
@@ -122,7 +132,7 @@ if __name__ == '__main__':
         print('ERROR: `iUVstrategy` with a value of '+str(iUVstrategy)+' is unknown!'); exit(0)
 
     
-    fNCseedBN = path.basename(fNCseed)
+    
 
     if iplot>0:
         if   CONF=='NANUK4':
@@ -140,8 +150,9 @@ if __name__ == '__main__':
     print(' * Horizontal resolution of the grid (as specified at command line): '+creskm+' km')
     #print('LOLO: creskm, csfkm =', creskm, csfkm); exit(0)    
     csfkm = '_'+csfkm
+
+    frqMod = '_'+str(int(rdt/3600.))+'h'
     
-    cdtbin = '_'+str(int(rdt/3600.))+'h'
     
      
     lplot = (ifreq_plot>0)
@@ -547,7 +558,7 @@ if __name__ == '__main__':
 
     if not lUse2DTime:
         # Save series at each model time step:
-        cf_nc_out = './nc/'+corgn+'_tracking_'+SeedBatch+cdtbin+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
+        cf_nc_out = './nc/'+corgn+'_tracking_'+SeedBatch+cdtbin+frqMod+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
         kk = sit.ncSaveCloudBuoys( cf_nc_out, vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
                                    mask=xmask[:,:,0], corigin=corgn )
 
@@ -598,7 +609,7 @@ if __name__ == '__main__':
     cdt1, cdt2 = split(':',e2c(zvt[0]))[0] , split(':',e2c(zvt[1]))[0] ; # keeps at the hour precision...
     cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
     cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')    
-    cf_nc_out = './nc/'+corgn+'_tracking12_'+SeedBatch+cdtbin+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
+    cf_nc_out = './nc/'+corgn+'_tracking12_'+SeedBatch+cdtbin+frqMod+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
     
     kk = sit.ncSaveCloudBuoys( cf_nc_out, zvt, IDs, z2XY[:,:,0], z2XY[:,:,1], z2GC[:,:,0], z2GC[:,:,1],
                                mask=zMSK[:,:,0], xtime=zTim, corigin=corgn )

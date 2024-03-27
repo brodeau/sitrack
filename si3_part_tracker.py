@@ -145,10 +145,15 @@ if __name__ == '__main__':
 
     # Nominal horizontal resolution:
     cc = split('-',csfkm)
-    if len(cc)==2:
+    if  len(cc)==2:
         creskm = cc[1]
-    print(' * Horizontal resolution of the grid (as specified at command line): '+creskm+' km')
-    #print('LOLO: creskm, csfkm =', creskm, csfkm); exit(0)    
+    elif len(cc)==1:
+        creskm = cc[0]
+    else:
+        print('ERROR: dont know what to do with `csfkm` = '+csfkm+' !!!'); exit(0)
+
+    print(' * Horizontal resolution of the grid (as specified at command line): '+creskm)
+    #print('LOLO: creskm, csfkm =', creskm, csfkm); exit(0)
     csfkm = '_'+csfkm
 
     frqMod = '_'+str(int(rdt/3600.))+'h'

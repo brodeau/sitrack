@@ -78,7 +78,7 @@ def Survive( kID, kjiT, pmskT, pIceC=[],  iverbose=0 ):
     
     # Test on land-sea mask / continent:
     if ikill==0:
-        zmt = pmskT[jT,iT] + pmskT[jT,iT+1]+pmskT[jT+1,iT]+pmskT[jT,iT-1]+pmskT[jT-1,iT-1]
+        zmt = pmskT[jT,iT] + pmskT[jT,iT+1]+pmskT[jT+1,iT]+pmskT[jT,iT-1]+pmskT[jT-1,iT]
         if zmt < 5:
             ikill = ikill+1
             if iverbose>0: print('        ===> I CANCEL buoy '+str(kID)+'!!! (too close to or over the land-sea mask)')
@@ -86,7 +86,7 @@ def Survive( kID, kjiT, pmskT, pIceC=[],  iverbose=0 ):
     # Test on sea-ice concentration:
     if ikill==0:
         if len(np.shape(pIceC))==2:
-            zic = 0.2*(pIceC[jT,iT] + pIceC[jT,iT+1]+pIceC[jT+1,iT]+pIceC[jT,iT-1]+pIceC[jT-1,iT-1])
+            zic = 0.2*(pIceC[jT,iT] + pIceC[jT,iT+1]+pIceC[jT+1,iT]+pIceC[jT,iT-1]+pIceC[jT-1,iT])
             if iverbose>1: print('     =>> 5P sea-ice concentration =',zic)
         if zic < rmin_conc:
             ikill = ikill+1

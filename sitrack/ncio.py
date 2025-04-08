@@ -266,7 +266,7 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[]
     v_time.units = tunits
     v_bid.units  = 'ID of buoy'
     x_lat.units = 'degrees north'
-    x_lon.units = 'degrees south'
+    x_lon.units = 'degrees east'
     x_ykm.units    = 'km'
     x_xkm.units    = 'km'
     #

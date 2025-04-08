@@ -356,7 +356,7 @@ def SidfexSeeding( filepath='./sidfexloc.dat' ):
     
 
 
-  def ReadFromSidfexDatFile( filepath='./sidfexloc.dat' ):
+def ReadFromSidfexDatFile( filepath='./sidfexloc.dat' ):
   '''
       Reads from text file sidfex.dat and returns an array with id, lon, lat for all SIDFEX buoys at a given date.
   '''

@@ -20,7 +20,7 @@ from random import random, choices
 
 
 idebug=0
-iplot=0
+iplot=1
 
 #lRandomize = True ; rDssAmpl = 0.001
 

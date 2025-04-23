@@ -233,16 +233,18 @@ def GetModelSeaIceConc( fNCsi3, name='siconc', krec=0, expected_shape=[] ):
 
 
 
-def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[],
+def ncSaveCloudBuoys( cf_out, ptime, pIDs, pLat, pLon, pY=[], pX=[], mask=[], xtime=[],
                       tunits=tunits_default, fillVal=FillValue, corigin=None ):
     '''
     '''
     print('\n *** [ncSaveCloudBuoys]: About to generate file: '+cf_out+' ...')
     (Nt,) = np.shape(ptime)
     (Nb,) = np.shape(pIDs)
-    if np.shape(pY)!=(Nt,Nb) or np.shape(pX)!=(Nt,Nb) or np.shape(pLat)!=(Nt,Nb) or np.shape(pLon)!=(Nt,Nb):
+    if np.shape(pLat)!=(Nt,Nb) or np.shape(pLon)!=(Nt,Nb):
         print('ERROR [ncSaveCloudBuoys]: one of the 2D arrays has a wrong shape!!!')
         exit(0)
+    lSaveY = (np.shape(pY)  == (Nt,Nb))
+    lSaveX = (np.shape(pX)  == (Nt,Nb))
     lSaveMask = (np.shape(mask)  == (Nt,Nb))
     lSaveTime = (np.shape(xtime) == (Nt,Nb)) ; # time for each buoy!
     #
@@ -257,18 +259,22 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[]
     # Variables:
     v_time = f_out.createVariable(cd_time,     'i4',(cd_time,))
     v_buoy = f_out.createVariable(cd_buoy,     'i4',(cd_buoy,))
-    v_bid  = f_out.createVariable('id_buoy',   'i4',(cd_buoy,))
+    v_bid  = f_out.createVariable('id_buoy',   'i8',(cd_buoy,))
     x_lat  = f_out.createVariable('latitude' , 'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
     x_lon  = f_out.createVariable('longitude', 'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
-    x_ykm  = f_out.createVariable('y_pos' ,    'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
-    x_xkm  = f_out.createVariable('x_pos',     'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
+    if lSaveY:
+        x_ykm  = f_out.createVariable('y_pos' ,    'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
+    if lSaveX:
+        x_xkm  = f_out.createVariable('x_pos',     'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
     #
     v_time.units = tunits
     v_bid.units  = 'ID of buoy'
     x_lat.units = 'degrees north'
-    x_lon.units = 'degrees south'
-    x_ykm.units    = 'km'
-    x_xkm.units    = 'km'
+    x_lon.units = 'degrees east'
+    if lSaveY:
+        x_ykm.units    = 'km'
+    if lSaveX:
+        x_xkm.units    = 'km'
     #
     if lSaveMask:
         v_mask = f_out.createVariable('mask',  'i1',(cd_time,cd_buoy,),                      zlib=True, complevel=9)
@@ -276,15 +282,17 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[]
         x_tim  = f_out.createVariable('time_pos', 'i4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
         x_tim.units = tunits
     #
-    v_buoy[:] = np.arange(Nb,dtype='i4')
+    v_buoy[:] = np.arange(Nb,dtype='i8')
     v_bid[:]  = pIDs[:]
     #
     for jt in range(Nt):
         v_time[jt]  = ptime[jt]
         x_lat[jt,:] =  pLat[jt,:]
         x_lon[jt,:] =  pLon[jt,:]
-        x_ykm[jt,:] =    pY[jt,:]
-        x_xkm[jt,:] =    pX[jt,:]
+        if lSaveY:
+            x_ykm[jt,:] =    pY[jt,:]
+        if lSaveX:
+            x_xkm[jt,:] =    pX[jt,:]
         if lSaveMask:
             v_mask[jt,:] = mask[jt,:]
         if lSaveTime:

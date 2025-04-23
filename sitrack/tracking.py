@@ -78,7 +78,7 @@ def Survive( kID, kjiT, pmskT, pIceC=[],  iverbose=0 ):
     
     # Test on land-sea mask / continent:
     if ikill==0:
-        zmt = pmskT[jT,iT] + pmskT[jT,iT+1]+pmskT[jT+1,iT]+pmskT[jT,iT-1]+pmskT[jT-1,iT-1]
+        zmt = pmskT[jT,iT] + pmskT[jT,iT+1]+pmskT[jT+1,iT]+pmskT[jT,iT-1]+pmskT[jT-1,iT]
         if zmt < 5:
             ikill = ikill+1
             if iverbose>0: print('        ===> I CANCEL buoy '+str(kID)+'!!! (too close to or over the land-sea mask)')
@@ -86,7 +86,7 @@ def Survive( kID, kjiT, pmskT, pIceC=[],  iverbose=0 ):
     # Test on sea-ice concentration:
     if ikill==0:
         if len(np.shape(pIceC))==2:
-            zic = 0.2*(pIceC[jT,iT] + pIceC[jT,iT+1]+pIceC[jT+1,iT]+pIceC[jT,iT-1]+pIceC[jT-1,iT-1])
+            zic = 0.2*(pIceC[jT,iT] + pIceC[jT,iT+1]+pIceC[jT+1,iT]+pIceC[jT,iT-1]+pIceC[jT-1,iT])
             if iverbose>1: print('     =>> 5P sea-ice concentration =',zic)
         if zic < rmin_conc:
             ikill = ikill+1
@@ -334,6 +334,45 @@ def debugSeeding1():
     zLatLon = np.array([ [75.,190.] ])
     return zLatLon
 
+def SidfexSeeding( filepath='./sidfexloc.dat' ):
+  ''' Generate seeding lon lat from SIDFEX buoys read from text file.
+  Returns an array with lat lon and another with buoy IDs.
+  '''
+  print("============= SIDFEX SEEDING")
+  #debug example zLatLon = np.array([ [75.,190.] ])
+  sidfexdat = ReadFromSidfexDatFile( filepath )
+  print('sidfexdat', sidfexdat)
+  print('sidfexdat.shape', sidfexdat.shape)
+  print('sidfexdat.ndim', sidfexdat.ndim)
+  if sidfexdat.ndim > 1:
+      zLatLon = sidfexdat[:,[2,1]] # reverse order of columns so that it is now lat lon.
+      zIDs = sidfexdat[:,0].astype(int)
+  else:
+      zLatLonsingle = sidfexdat[[2,1]]
+      zLatLon=np.stack((zLatLonsingle,zLatLonsingle))  # here we duplicate the line to avoid problem when read by script generate_seeding
+      zIDssingle = sidfexdat[0].astype(int)
+      zIDs = np.stack((zIDssingle,zIDssingle)) # here we duplicate the line to avoid problem when read by script generate_seeding
+  return zLatLon,zIDs
+    
+
+
+def ReadFromSidfexDatFile( filepath='./sidfexloc.dat' ):
+  '''
+      Reads from text file sidfex.dat and returns an array with id, lon, lat for all SIDFEX buoys at a given date.
+  '''
+  from os.path import exists
+  if (exists(filepath)):
+      # reads buoys id and locations (lon lat) from text file
+      listbuoys = np.genfromtxt(open(filepath))
+      # Keep track of how many buoys are read in input file
+      NBUOYTOTR=listbuoys.shape[0]
+      print("======== Nb of buoys read from sidfex file......"+str(NBUOYTOTR))
+  else:
+      print("============================================")
+      print("=== Error ! 'sidfexloc.dat' file is missing.")
+      print("============================================")
+      exit(0)
+  return listbuoys
 
 def nemoSeed( pmskT, platT, plonT, pIC, khss=1, fmsk_rstrct=[],
               platF=[], plonF=[] ):

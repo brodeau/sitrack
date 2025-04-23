@@ -15,7 +15,9 @@ NEMO_EXP="00"  ; SBDIR="00000001-00003504_dev_BBM" ; export DATE2="${YEAR}0313"
 
 export NM_ICECONC="siconc-t"
 
-export iHSS=2 ; RESKM=24
+export iHSS=2 ; export RESKM="24km"
+
+export DT_BIN="72"
 
 NJPAR=1 ; # number of jobs we can launch in //
 
@@ -27,32 +29,11 @@ LCOARSEN="0"
 
 host=`hostname | cut -d '.' -f2`
 case ${host} in
-    "merlat")
-        #/MEDIA/data/NANUK4/BBM00/NANUK4_ICE-BBM00_1h_19970101_19970331_icemod_LIGHT480.nc4
-        export DATA_DIR="/MEDIA/data"
-        export iHSS=1 ; RESKM=12
-        LCOARSEN="80"
-        #        
-        Ndays=6
-        xtra_sfx="_LIGHT480"
-        #
-        ;;
-    "mcp-oceannext-01")
-        export DATA_DIR="/data/gcm_setup"
-        #
-        iHSS=8
-        NJPAR=4       
-        #
-        ;;
     "frazilo")
         export DATA_DIR="/data/laurent"
         Ndays=31
         #
         NJPAR=30
-        #NJPAR=1
-        #
-        #SI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0205_icemod.nc4" ; # 1 month !!!
-        #
         ;;
     *)
         echo "Unsupported host: ${host} !"

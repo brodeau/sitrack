@@ -65,9 +65,10 @@ def __argument_parsing__():
     parser.add_argument('-N', '--ncnf' , default='NANUK4',     help='name of the horizontak NEMO config used')
     parser.add_argument('-p', '--plot' , type=int, default=0,  help='how often, in terms of model records, we plot the positions on a map')
     parser.add_argument('-R', '--hres' ,  default="10km",      help='horizontal resolution of the grid [km] (default="10km")')
-    parser.add_argument('-u', '--uname' , default='u_ice-u',   help='name of U-velocity component in input file (default: u_ice)')
-    parser.add_argument('-v', '--vname' , default='v_ice-v',   help='name of V-velocity component in input file (default: v_ice)')
+    parser.add_argument('-u', '--uname' , default='u_ice',     help='name of U-velocity component in input file (default: u_ice)')
+    parser.add_argument('-v', '--vname' , default='v_ice',     help='name of V-velocity component in input file (default: v_ice)')
     parser.add_argument('-c', '--cname' , default='siconc',    help='name of sea-ice concentration in input file (default: siconc)')
+    parser.add_argument('-d', '--dtbin', type=int, default=0,  help='`dt` for binning in hours')
     #
     args = parser.parse_args()
     print('')
@@ -81,7 +82,7 @@ def __argument_parsing__():
     #
     if args.force2dtime: lUse2DTime = args.force2dtime
     #
-    return args.fsi3, args.fmmm, args.fsdg, args.grid, args.krec, args.dend, args.ncnf, args.plot, args.hres, args.uname, args.vname, args.cname
+    return args.fsi3, args.fmmm, args.fsdg, args.grid, args.krec, args.dend, args.ncnf, args.plot, args.hres, args.uname, args.vname, args.cname, args.dtbin
 
 
 
@@ -94,7 +95,7 @@ if __name__ == '__main__':
     print('##########################################################\n')
 
 
-    cf_uv, cf_mm, fNCseed,   gridType, jrecSeed, cdate_stop, CONF, ifreq_plot, csfkm, cv_u, cv_v, cv_A = __argument_parsing__()
+    cf_uv, cf_mm, fNCseed,   gridType, jrecSeed, cdate_stop, CONF, ifreq_plot, csfkm, cv_u, cv_v, cv_A, idt_bin = __argument_parsing__()
 
     print(' lUse2DTime =',lUse2DTime)
     print('cf_uv =',cf_uv)
@@ -111,15 +112,15 @@ if __name__ == '__main__':
     sit.chck4f(cf_mm)
     sit.chck4f(fNCseed)
 
-
-    fNCseedBN = path.basename(fNCseed)
-    print(fNCseed)
-
-    cc = split('_',fNCseedBN)
-    cdtbin = cc[-4]
-    if cdtbin[:2] != 'dt':
-        print('ERROR: guessed wron binning info from seeding file name! => cdtbin = '+cdtbin); exit(0)
-    cdtbin = '_'+cdtbin
+    if idt_bin<=0:
+        cc = split('_',path.basename(fNCseed))
+        cdtbin = cc[-4]
+        if cdtbin[:2] != 'dt':
+            print('ERROR: guessed wrong binning info from seeding file name! => cdtbin = '+cdtbin); exit(0)
+        cdtbin = '_'+cdtbin
+    else:
+        cdtbin = str(idt_bin)
+        print('  ==> will use a `dt` of '+cdtbin+' hours for binning')
     
     if csfkm[-2:] != 'km':
         print('ERROR: resolution string must end with "km"!'); exit(0)
@@ -153,7 +154,6 @@ if __name__ == '__main__':
         print('ERROR: dont know what to do with `csfkm` = '+csfkm+' !!!'); exit(0)
 
     print(' * Horizontal resolution of the grid (as specified at command line): '+creskm)
-    #print('LOLO: creskm, csfkm =', creskm, csfkm); exit(0)
     csfkm = '_'+csfkm
 
     frqMod = '_'+str(int(rdt/3600.))+'h'
@@ -171,7 +171,6 @@ if __name__ == '__main__':
     idateSeedA, idateSeedB, SeedName, SeedBatch, zTpos = sit.SeedFileTimeInfo( fNCseed, ltime2d=lUse2DTime, iverbose=idebug )
 
     print('')
-
     
     # Same for model input file + time records info:
     Nt0, ztime_model, idateModA, idateModB, ModConf, ModExp = sit.ModelFileTimeInfo( cf_uv, iverbose=idebug )
@@ -255,9 +254,11 @@ if __name__ == '__main__':
 
         zt, zIDs, XseedG, XseedC = sit.LoadNCdata( fNCseed, krec=jrecSeed, iverbose=idebug )
         print('     => data used for seeding is read at date =',e2c(zt),'\n        (shape of XseedG =',np.shape(XseedG),')')
-        
+
         (nP,_) = np.shape(XseedG)
 
+        #print('\n\n XseedG =',XseedG); exit(0);#lolo
+        
         # We want an ID for each seeded buoy:
         IDs = np.array( range(nP), dtype=int) + 1 ; # Default! No ID=0 !!!
 

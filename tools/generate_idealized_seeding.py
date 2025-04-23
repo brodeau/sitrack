@@ -261,8 +261,8 @@ if __name__ == '__main__':
     zTime = np.array( [ mjt.clock2epoch(cdate0) ], dtype='i4' )    
     print('\n * Requested initialization date =', mjt.epoch2clock(zTime[0]))
     
-    cdate = mjt.epoch2clock(zTime[0], precision='h')
-    cdate = str.replace(cdate, '-', '')
+    cdate = mjt.epoch2clock(zTime[0], precision='D')
+    #cdate = str.replace(cdate, '-', '')
     
 
     #if lRandomize:
@@ -392,10 +392,11 @@ if __name__ == '__main__':
     foutnc = './nc/sitrack_seeding_'+seeding_type+'_'+cdate+cextra+'.nc'    
     print('\n *** Saving seeding file for date =',mjt.epoch2clock(zTime[0]),'\n   => into:',foutnc)
 
-    
-    kk = sit.ncSaveCloudBuoys( foutnc, zTime, zIDs, XseedYX[:,:,0], XseedYX[:,:,1], XseedGC[:,:,0], XseedGC[:,:,1],
-                               corigin='idealized_seeding' )
 
+    # ncSaveCloudBuoys( cf_out, ptime, pIDs, pLat, pLon, pY=[], pX=[], mask=[], xtime=[],
+    #                  tunits=tunits_default, fillVal=FillValue, corigin=None )
+    kk = sit.ncSaveCloudBuoys( foutnc, zTime, zIDs, XseedGC[:,:,0], XseedGC[:,:,1], pY=XseedYX[:,:,0], pX=XseedYX[:,:,1], corigin='idealized_seeding' )
+    
     if iplot>0:
         fdir = './figs/SEEDING'
         makedirs( fdir, exist_ok=True )

@@ -19,6 +19,9 @@ export iHSS=2 ; export RESKM="24km"
 
 export DT_BIN="72"
 
+export FRQ_PLOT_H=12
+
+
 NJPAR=1 ; # number of jobs we can launch in //
 
 FREQ_AN_DAYS=3 ; # frequency in days of the deformation analysis...

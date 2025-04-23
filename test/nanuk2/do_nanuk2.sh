@@ -24,7 +24,7 @@ fi
 
 
 # Actually that the ice tracker that should look inside the nc file to get date 1 and 2:
-CMD="${EXE2} -i ${FSI3IN} -m ${FNMM} -s ${fout} -d ${DT_BIN} -c ${NM_ICECONC} -R ${RESKM}" ; # with nc file for init seed...
+CMD="${EXE2} -i ${FSI3IN} -m ${FNMM} -s ${fout} -d ${DT_BIN} -c ${NM_ICECONC} -R ${RESKM} -p ${FRQ_PLOT_H}"
 echo
 echo " *** About to launch:"; echo "     ${CMD}"; echo
 ${CMD}

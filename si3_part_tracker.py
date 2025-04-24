@@ -61,14 +61,14 @@ def __argument_parsing__():
     parser.add_argument('-k', '--krec' , type=int, default=0,  help='record of seeding file to use to seed from')
     parser.add_argument('-e', '--dend' , default=None,         help='date at which to stop')
     parser.add_argument('-F', '--force2dtime',  action=ap.BooleanOptionalAction, help='buoys are not using the same common time axis, so time array will be 2D! (default=False)')
-    parser.add_argument('-N', '--ncnf' , default='NANUK4',     help='name of the horizontak NEMO config used')
+    parser.add_argument('-N', '--ncnf' , default='unknown',     help='name of the horizontak NEMO config used')
     parser.add_argument('-p', '--plot' , type=int, default=0,  help='how often, in terms of model records, we plot the positions on a map')
     parser.add_argument('-R', '--hres' ,  default="10km",      help='horizontal resolution of the grid [km] (default="10km")')
     parser.add_argument('-u', '--uname' , default='u_ice',     help='name of U-velocity component in input file (default: u_ice)')
     parser.add_argument('-v', '--vname' , default='v_ice',     help='name of V-velocity component in input file (default: v_ice)')
     parser.add_argument('-c', '--cname' , default='siconc',    help='name of sea-ice concentration in input file (default: siconc)')
     parser.add_argument('-d', '--dtbin', type=int, default=0,  help='`dt` for binning in hours')
-    parser.add_argument('-V', '--varlist' , default=None,        help='list (comma-separated) of names of variables to extract along trajectories')
+    parser.add_argument('-V', '--varlist' , default=None,      help='list (","-separated) of T-point variables to save along trajectories')
     #
     args = parser.parse_args()
     print('')
@@ -114,26 +114,22 @@ if __name__ == '__main__':
     sit.chck4f(fNCseed)
 
 
-    # Variables specified for tracking?
+    # Extra T-point variables specified for being saved along the track?
     lvlist = False
     if vlist:
         lvlist = True
         vlist = vlist.split(',')
-        print('\n * Going to extract the following variables along the trajectories => ', vlist)
+        print('\n * Going to save the following T-point variables along the trajectories => ', vlist)
         print('    ==> expected to be present in the input sea-ice velocity file...')
-        #lili
         with Dataset(cf_uv) as ds_UVmod:
             listv_fuv = list(ds_UVmod.variables.keys())
         for cv in vlist:
             if not cv in listv_fuv:
                 print('ERROR: variable `'+cv+'` is not present in file:\n'+'    '+cf_uv)
                 exit(0)
+        NeV = len(vlist)
 
-    exit(0)
-
-
-
-    
+    # `dt` in hours for binning:
     if idt_bin<=0:
         cc = split('_',path.basename(fNCseed))
         cdtbin = cc[-4]
@@ -142,29 +138,34 @@ if __name__ == '__main__':
         cdtbin = '_'+cdtbin
     else:
         cdtbin = str(idt_bin)
-        print('  ==> will use a `dt` of '+cdtbin+' hours for binning')
-    
+        print('  ==> will use a `dt` of '+cdtbin+' hours for binning\n')
+
     if csfkm[-2:] != 'km':
         print('ERROR: resolution string must end with "km"!'); exit(0)
-    
-    
+        
     if not gridType in ['C','A']:
-        print('ERROR: only "C" and "A" grids are supported for now...'); exit(0)
+        print('ERROR: only "C" and "A" type of grids are supported for now...'); exit(0)
     
     if gridType=='C' and not iUVstrategy in [1,2]:
         print('ERROR: `iUVstrategy` with a value of '+str(iUVstrategy)+' is unknown!'); exit(0)
 
-    
-    
 
     if iplot>0:
-        if   CONF=='NANUK4':
+        if   CONF=='unknown':
+            name_proj = 'CentralArctic'
+        elif CONF[:5]=='NANUK':
             name_proj = 'CentralArctic'
         elif CONF=='HUDSON4':
             name_proj = 'HudsonB'
         else:
             print('ERROR: CONF "'+CONF+'" is unknown (to know what proj to use for plots...)')
             exit(0)
+    #
+    if CONF=='unknown':
+        print(' *** Horizontal config was not specified so defaulting to `'+name_proj+'` projection!\n')
+    else:
+        print(' *** With horizontal config `'+CONF+'` => will use the `'+name_proj+'` projection!\n')
+            
 
     # Nominal horizontal resolution:
     cc = split('-',csfkm)
@@ -179,7 +180,6 @@ if __name__ == '__main__':
     csfkm = '_'+csfkm
 
     frqMod = '_'+str(int(rdt/3600.))+'h'
-    
     
      
     lplot = (ifreq_plot>0)
@@ -246,7 +246,12 @@ if __name__ == '__main__':
     xUu = np.zeros((Nj,Ni))
     xVv = np.zeros((Nj,Ni))
     xIC = np.zeros((Nj,Ni)) ; # Sea-ice concentration
+    if lvlist:
+        print('lolo: allocate array for the '+str(NeV)+' variables to track!')
+        xVars = np.zeros((NeV,Nj,Ni))
+        zScal = np.zeros(NeV)
 
+    
     # We need a name for the intermediate backup file:
     cf_npz_itm = './seed/Initialized_buoys_'+SeedName+'_'+CONF+'.npz'
 
@@ -431,6 +436,12 @@ if __name__ == '__main__':
         xIC[:,:] = ds_UVmod.variables[cv_A][jrec,:,:]
         xUu[:,:] = ds_UVmod.variables[cv_u][jrec,:,:]
         xVv[:,:] = ds_UVmod.variables[cv_v][jrec,:,:]
+        if lvlist:
+            iv = 0
+            for cev in vlist:
+                xVars[iv,:,:] = ds_UVmod.variables[cev][jrec,:,:]
+                print('lolo: read and stored var `'+cev+'` at record #',jrec+1)
+                iv = iv+1
 
         print('   *   current number of buoys alive = '+str(iAlive.sum()))
 
@@ -512,11 +523,22 @@ if __name__ == '__main__':
                     zU = xUu[jT,iT]
                     zV = xVv[jT,iT]
 
-                        
-                if idebug>0:
+                if lvlist:
+                    # Regardless of the strategy or the grid, we save the T-point scalars at the center of the cell:
+                    for jv in range(NeV):
+                        zScal[jv] = xVars[jv,jT,iT]
+                        #lulu
+
+
+                    
+                #if idebug>0:
+                if True:
                     print('    =>> read velocity at ji,jj=',iT,jT)
                     print('    * ice velocity of the mesh: u,v =',zU, zV, 'm/s')
-
+                    if lvlist:
+                        for jv in range(NeV): print('    * scalar '+vlist[jv]+' =',zScal[jv])
+                exit(0)
+                    
                 # Displacement during the upcomming time step:
                 dx = zU*rdt
                 dy = zV*rdt

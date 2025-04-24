@@ -10,7 +10,6 @@ cxtra=""
 
 export DATE1="${YEAR}0101"
 
-# /data/gcm_setup/NANUK4/BBM00$ NANUK4_ICE-BBM00_1h_19970101_19970331_icemod.nc4
 NEMO_EXP="00"  ; SBDIR="00000001-00003504_dev_BBM" ; export DATE2="${YEAR}0313"
 
 export NM_ICECONC="siconc-t"

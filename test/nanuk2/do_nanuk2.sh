@@ -23,8 +23,8 @@ if [ ! -f ${fout} ]; then
 fi
 
 
-# Actually that the ice tracker that should look inside the nc file to get date 1 and 2:
-CMD="${EXE2} -i ${FSI3IN} -m ${FNMM} -s ${fout} -d ${DT_BIN} -c ${NM_ICECONC} -R ${RESKM} -p ${FRQ_PLOT_H}"
+# Callin `sitrack` to build trajectories:
+CMD="${EXE2} -i ${FSI3IN} -m ${FNMM} -s ${fout} -d ${DT_BIN} -c ${NM_ICECONC} -R ${RESKM} -p ${FRQ_PLOT_H} -V siconc-t,sivolu-t"
 echo
 echo " *** About to launch:"; echo "     ${CMD}"; echo
 ${CMD}

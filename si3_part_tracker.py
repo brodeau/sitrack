@@ -16,7 +16,6 @@ from re import split
 from netCDF4 import Dataset
 from math import atan2,pi
 
-#import gonzag as gzg
 import mojito  as mjt
 from mojito import epoch2clock as e2c
 import sitrack as sit
@@ -25,8 +24,6 @@ import sitrack as sit
 idebug=0
 iplot=1
 
-#lUse2DTime = True ; # => if set to True, each buoy will be tracked for the exact same amount of time as its RGPS counterpart
-#                       #    => otherwize, it is tracked for 3 days...
 
 rdt = 3600. ; #FIXME!!! time step [s] (must be that of model output ice velocities used)
 
@@ -48,10 +45,12 @@ def __argument_parsing__():
     ARGUMENT PARSING / USAGE
     '''    
     import argparse as ap
+    #
     global lUse2DTime
-    #
     lUse2DTime = False ; # what you want in most of the cases... (not RGPS data though)
-    #
+    # => if `lUse2DTime` set to True, each buoy will be tracked for the exact same amount of time as its RGPS counterpart
+    #    => otherwize, it is tracked for 3 days...
+    
     parser = ap.ArgumentParser(description='SITRACK ICE PARTICULES TRACKER')
     rqrdNam = parser.add_argument_group('required arguments')
     rqrdNam.add_argument('-i', '--fsi3', required=True,  help='output file of SI3 containing ice velocities ans co')
@@ -69,6 +68,7 @@ def __argument_parsing__():
     parser.add_argument('-v', '--vname' , default='v_ice',     help='name of V-velocity component in input file (default: v_ice)')
     parser.add_argument('-c', '--cname' , default='siconc',    help='name of sea-ice concentration in input file (default: siconc)')
     parser.add_argument('-d', '--dtbin', type=int, default=0,  help='`dt` for binning in hours')
+    parser.add_argument('-V', '--varlist' , default=None,        help='list (comma-separated) of names of variables to extract along trajectories')
     #
     args = parser.parse_args()
     print('')
@@ -82,7 +82,8 @@ def __argument_parsing__():
     #
     if args.force2dtime: lUse2DTime = args.force2dtime
     #
-    return args.fsi3, args.fmmm, args.fsdg, args.grid, args.krec, args.dend, args.ncnf, args.plot, args.hres, args.uname, args.vname, args.cname, args.dtbin
+    return args.fsi3, args.fmmm, args.fsdg, args.grid, args.krec, args.dend, args.ncnf, args.plot, args.hres, \
+           args.uname, args.vname, args.cname, args.dtbin, args.varlist
 
 
 
@@ -95,7 +96,7 @@ if __name__ == '__main__':
     print('##########################################################\n')
 
 
-    cf_uv, cf_mm, fNCseed,   gridType, jrecSeed, cdate_stop, CONF, ifreq_plot, csfkm, cv_u, cv_v, cv_A, idt_bin = __argument_parsing__()
+    cf_uv, cf_mm, fNCseed, gridType, jrecSeed, cdate_stop, CONF, ifreq_plot, csfkm, cv_u, cv_v, cv_A, idt_bin, vlist = __argument_parsing__()
 
     print(' lUse2DTime =',lUse2DTime)
     print('cf_uv =',cf_uv)
@@ -112,6 +113,27 @@ if __name__ == '__main__':
     sit.chck4f(cf_mm)
     sit.chck4f(fNCseed)
 
+
+    # Variables specified for tracking?
+    lvlist = False
+    if vlist:
+        lvlist = True
+        vlist = vlist.split(',')
+        print('\n * Going to extract the following variables along the trajectories => ', vlist)
+        print('    ==> expected to be present in the input sea-ice velocity file...')
+        #lili
+        with Dataset(cf_uv) as ds_UVmod:
+            listv_fuv = list(ds_UVmod.variables.keys())
+        for cv in vlist:
+            if not cv in listv_fuv:
+                print('ERROR: variable `'+cv+'` is not present in file:\n'+'    '+cf_uv)
+                exit(0)
+
+    exit(0)
+
+
+
+    
     if idt_bin<=0:
         cc = split('_',path.basename(fNCseed))
         cdtbin = cc[-4]

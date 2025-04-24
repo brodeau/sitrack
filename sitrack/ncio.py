@@ -234,9 +234,9 @@ def GetModelSeaIceConc( fNCsi3, name='siconc', krec=0, expected_shape=[] ):
 
 
 def ncSaveCloudBuoys( cf_out, ptime, pIDs, pLat, pLon, pY=[], pX=[], mask=[], xtime=[],
-                      tunits=tunits_default, fillVal=FillValue, corigin=None ):
+                      tunits=tunits_default, fillVal=FillValue, corigin=None, Scalars=[], listSclr=[] ):
     '''
-    '''
+    '''    
     print('\n *** [ncSaveCloudBuoys]: About to generate file: '+cf_out+' ...')
     (Nt,) = np.shape(ptime)
     (Nb,) = np.shape(pIDs)
@@ -248,6 +248,12 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pLat, pLon, pY=[], pX=[], mask=[], xt
     lSaveMask = (np.shape(mask)  == (Nt,Nb))
     lSaveTime = (np.shape(xtime) == (Nt,Nb)) ; # time for each buoy!
     #
+    lSaveSclr = ( len(np.shape(Scalars)) == 3 )
+    if lSaveSclr:
+        (_,_,Nsclr) = np.shape(Scalars)
+        if len(listSclr)!=Nsclr:
+            print('ERROR [ncSaveCloudBuoys]: wrong length for `listSclr` !',len(listSclr)); exit(0)
+
     f_out = Dataset(cf_out, 'w', format='NETCDF4')
     #
     # Dimensions:
@@ -266,7 +272,7 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pLat, pLon, pY=[], pX=[], mask=[], xt
         x_ykm  = f_out.createVariable('y_pos' ,    'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
     if lSaveX:
         x_xkm  = f_out.createVariable('x_pos',     'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
-    #
+    
     v_time.units = tunits
     v_bid.units  = 'ID of buoy'
     x_lat.units = 'degrees north'
@@ -298,6 +304,12 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pLat, pLon, pY=[], pX=[], mask=[], xt
         if lSaveTime:
             x_tim[jt,:] = xtime[jt,:]
     #
+    if lSaveSclr:
+        for jv in range(Nsclr):
+            var = f_out.createVariable(listSclr[jv], 'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
+            for jt in range(Nt):
+                var[jt,:] = Scalars[jt,:,jv]
+    
     if corigin:
          f_out.Origin = corigin
     f_out.About  = 'Lagrangian sea-ice drift'
@@ -348,7 +360,6 @@ def LoadNCtime( cfile, ltime2d=False, iverbose=0 ):
         else:
             return Nt, ztime
 
-#time_pos:lolo
 
 def LoadNCdata( cfile, krec=-1, lmask=False, lGetTimePos=False, iverbose=0 ):
     '''

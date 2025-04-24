@@ -392,10 +392,8 @@ if __name__ == '__main__':
     foutnc = './nc/sitrack_seeding_'+seeding_type+'_'+cdate+cextra+'.nc'    
     print('\n *** Saving seeding file for date =',mjt.epoch2clock(zTime[0]),'\n   => into:',foutnc)
 
-
-    # ncSaveCloudBuoys( cf_out, ptime, pIDs, pLat, pLon, pY=[], pX=[], mask=[], xtime=[],
-    #                  tunits=tunits_default, fillVal=FillValue, corigin=None )
-    kk = sit.ncSaveCloudBuoys( foutnc, zTime, zIDs, XseedGC[:,:,0], XseedGC[:,:,1], pY=XseedYX[:,:,0], pX=XseedYX[:,:,1], corigin='idealized_seeding' )
+    kk = sit.ncSaveCloudBuoys( foutnc, zTime, zIDs, XseedGC[:,:,0], XseedGC[:,:,1], pY=XseedYX[:,:,0], pX=XseedYX[:,:,1],
+                               corigin='idealized_seeding' )
     
     if iplot>0:
         fdir = './figs/SEEDING'

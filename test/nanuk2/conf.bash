@@ -1,55 +1,43 @@
 #!/bin/bash
 
-YEAR="2016"
-
 SITRACK_DIR="${HOME}/DEV/sitrack"
 
+
+# SI3/NANUQ output file for work with
 NEMO_CONF="NANUK2" ; NZ=75
+YEAR="2016"
+DATE1="${YEAR}0101"; DATE2="${YEAR}0313"
+NEMO_EXP="00"
+SBDIR="00000001-00003504_dev_BBM" 
+RESKM="24km"
+NM_ICECONC="siconc-t"
 
-cxtra=""
+# sitrack:
+iHSS=2 
+DT_BIN="72"
+FRQ_PLOT_H=12
 
-export DATE1="${YEAR}0101"
-
-NEMO_EXP="00"  ; SBDIR="00000001-00003504_dev_BBM" ; export DATE2="${YEAR}0313"
-
-export NM_ICECONC="siconc-t"
-
-export iHSS=2 ; export RESKM="24km"
-
-export DT_BIN="72"
-
-export FRQ_PLOT_H=12
-
-
-NJPAR=1 ; # number of jobs we can launch in //
-
-FREQ_AN_DAYS=3 ; # frequency in days of the deformation analysis...
-
-xtra_sfx=""
-
-LCOARSEN="0"
-
+# Where is the data saved depending on host:
 host=`hostname | cut -d '.' -f2`
 case ${host} in
     "frazilo")
-        export DATA_DIR="/data/laurent"
-        Ndays=31
-        #
-        NJPAR=30
+        DATA_DIR="/data/laurent"
         ;;
     *)
         echo "Unsupported host: ${host} !"
         exit
 esac
 
+#---------------------------------------------------------------------------
 
-FSI3IN="${NEMO_CONF}-${NEMO_EXP}_1h_${DATE1}_${DATE2}_icemod${xtra_sfx}.nc4"
 
-export FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}-${NEMO_EXP}-S/${SBDIR}${cxtra}/${FSI3IN}"
+FSI3IN="${NEMO_CONF}-${NEMO_EXP}_1h_${DATE1}_${DATE2}_icemod.nc4"
 
-export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L${NZ}-I/mesh_mask_${NEMO_CONF}_L${NZ}_4.2.2.nc"
+FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}-${NEMO_EXP}-S/${SBDIR}/${FSI3IN}"
 
-export FFSM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L${NZ}-I/mask_${NEMO_CONF}_rgps.nc"
+FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L${NZ}-I/mesh_mask_${NEMO_CONF}_L${NZ}_4.2.2.nc"
+
+FFSM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L${NZ}-I/mask_${NEMO_CONF}_rgps.nc"
 
 echo
 echo "FSI3IN => ${FSI3IN}"
@@ -62,6 +50,6 @@ mkdir -p ./figs ./npz
 YYYY=`echo ${DATE1} | cut -c1-4`
 MM=`echo ${DATE1} | cut -c5-6`
 DD=`echo ${DATE1} | cut -c7-8`
-export NDATE1="${YYYY}-${MM}-${DD}"
-export LDATE1="${NDATE1}_00:00:00"
+NDATE1="${YYYY}-${MM}-${DD}"
+LDATE1="${NDATE1}_00:00:00"
 

@@ -118,6 +118,9 @@ if __name__ == '__main__':
     if cf_si3:
         lnemoSI3 = True
         seeding_type = 'nemoTsi3'
+    
+    if lsidfex==1:
+        seeding_type = 'sidfex'
 
     lForceSeedRegion = False
     if cf_force_msk:

@@ -24,7 +24,7 @@ fi
 
 
 # Callin `sitrack` to build trajectories:
-CMD="${EXE2} -i ${FSI3IN} -m ${FNMM} -s ${fout} -N ${NEMO_CONF} -d ${DT_BIN} -c ${NM_ICECONC} -R ${RESKM} -p ${FRQ_PLOT_H} -V siconc-t,sivolu-t"
+CMD="${EXE2} -i ${FSI3IN} -m ${FNMM} -s ${fout} -N ${NEMO_CONF} -c ${NM_ICECONC} -R ${RESKM} -p ${FRQ_PLOT_H} -V siconc-t,sivolu-t"
 echo
 echo " *** About to launch:"; echo "     ${CMD}"; echo
 ${CMD}

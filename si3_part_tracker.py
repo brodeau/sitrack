@@ -67,7 +67,6 @@ def __argument_parsing__():
     parser.add_argument('-u', '--uname' , default='u_ice',     help='name of U-velocity component in input file (default: u_ice)')
     parser.add_argument('-v', '--vname' , default='v_ice',     help='name of V-velocity component in input file (default: v_ice)')
     parser.add_argument('-c', '--cname' , default='siconc',    help='name of sea-ice concentration in input file (default: siconc)')
-    parser.add_argument('-d', '--dtbin', type=int, default=0,  help='`dt` for binning in hours')
     parser.add_argument('-V', '--varlist' , default=None,      help='list (","-separated) of T-point variables to save along trajectories')
     #
     args = parser.parse_args()
@@ -83,7 +82,7 @@ def __argument_parsing__():
     if args.force2dtime: lUse2DTime = args.force2dtime
     #
     return args.fsi3, args.fmmm, args.fsdg, args.grid, args.krec, args.dend, args.ncnf, args.plot, args.hres, \
-           args.uname, args.vname, args.cname, args.dtbin, args.varlist
+           args.uname, args.vname, args.cname, args.varlist
 
 
 
@@ -95,8 +94,7 @@ if __name__ == '__main__':
     print('#            SITRACK ICE PARTICULES TRACKER              #')
     print('##########################################################\n')
 
-
-    cf_uv, cf_mm, fNCseed, gridType, jrecSeed, cdate_stop, CONF, ifreq_plot, csfkm, cv_u, cv_v, cv_A, idt_bin, vlist = __argument_parsing__()
+    cf_uv, cf_mm, fNCseed, gridType, jrecSeed, cdate_stop, CONF, ifreq_plot, csfkm, cv_u, cv_v, cv_A, vlist = __argument_parsing__()
 
     print(' lUse2DTime =',lUse2DTime)
     print('cf_uv =',cf_uv)
@@ -128,17 +126,6 @@ if __name__ == '__main__':
                 print('ERROR: variable `'+cv+'` is not present in file:\n'+'    '+cf_uv)
                 exit(0)
         NeV = len(vlist)
-
-    # `dt` in hours for binning:
-    if idt_bin<=0:
-        cc = split('_',path.basename(fNCseed))
-        cdtbin = cc[-4]
-        if cdtbin[:2] != 'dt':
-            print('ERROR: guessed wrong binning info from seeding file name! => cdtbin = '+cdtbin); exit(0)
-        cdtbin = '_'+cdtbin
-    else:
-        cdtbin = str(idt_bin)
-        print('  ==> will use a `dt` of '+cdtbin+' hours for binning\n')
 
     if csfkm[-2:] != 'km':
         print('ERROR: resolution string must end with "km"!'); exit(0)
@@ -608,7 +595,7 @@ if __name__ == '__main__':
 
     if not lUse2DTime:
         # Save series at each model time step:
-        cf_nc_out = './nc/'+corgn+'_tracking_'+SeedBatch+cdtbin+frqMod+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
+        cf_nc_out = './nc/'+corgn+'_tracking_'+SeedBatch+'_'+frqMod+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
         #
         if lvlist:
             kk = sit.ncSaveCloudBuoys( cf_nc_out, vTime, IDs, xPosG[:,:,0], xPosG[:,:,1], pY=xPosC[:,:,0], pX=xPosC[:,:,1],
@@ -664,7 +651,7 @@ if __name__ == '__main__':
     cdt1, cdt2 = split(':',e2c(zvt[0]))[0] , split(':',e2c(zvt[1]))[0] ; # keeps at the hour precision...
     cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
     cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')    
-    cf_nc_out = './nc/'+corgn+'_tracking12_'+SeedBatch+cdtbin+frqMod+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
+    cf_nc_out = './nc/'+corgn+'_tracking12_'+SeedBatch+'_'+frqMod+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
     
     kk = sit.ncSaveCloudBuoys( cf_nc_out, zvt, IDs, z2GC[:,:,0], z2GC[:,:,1], pY=z2XY[:,:,0], pX=z2XY[:,:,1],
                                mask=zMSK[:,:,0], xtime=zTim, corigin=corgn )

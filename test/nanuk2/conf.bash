@@ -14,7 +14,6 @@ NM_ICECONC="siconc-t"
 
 # sitrack:
 iHSS=2 
-DT_BIN="72"
 FRQ_PLOT_H=12
 
 # Where is the data saved depending on host:

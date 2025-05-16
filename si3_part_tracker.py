@@ -595,7 +595,7 @@ if __name__ == '__main__':
 
     if not lUse2DTime:
         # Save series at each model time step:
-        cf_nc_out = './nc/'+corgn+'_tracking_'+SeedBatch+'_'+frqMod+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
+        cf_nc_out = './nc/'+corgn+'_tracking_'+SeedBatch+frqMod+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
         #
         if lvlist:
             kk = sit.ncSaveCloudBuoys( cf_nc_out, vTime, IDs, xPosG[:,:,0], xPosG[:,:,1], pY=xPosC[:,:,0], pX=xPosC[:,:,1],
@@ -651,7 +651,7 @@ if __name__ == '__main__':
     cdt1, cdt2 = split(':',e2c(zvt[0]))[0] , split(':',e2c(zvt[1]))[0] ; # keeps at the hour precision...
     cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
     cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')    
-    cf_nc_out = './nc/'+corgn+'_tracking12_'+SeedBatch+'_'+frqMod+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
+    cf_nc_out = './nc/'+corgn+'_tracking12_'+SeedBatch+frqMod+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
     
     kk = sit.ncSaveCloudBuoys( cf_nc_out, zvt, IDs, z2GC[:,:,0], z2GC[:,:,1], pY=z2XY[:,:,0], pX=z2XY[:,:,1],
                                mask=zMSK[:,:,0], xtime=zTim, corigin=corgn )

@@ -588,6 +588,9 @@ if __name__ == '__main__':
     cdt1, cdt2 = split(':',e2c(vTime[0]))[0] , split(':',e2c(vTime[Nt]))[0] ; # keeps at the hour precision...
     cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
     cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
+    
+    xPosG[:,:,1]=sit.degE_to_degWE(xPosG[:,:,1]) #convert the longitude into -180 -- 180 frame (LF)
+
     if gridType=='C':
         corgn = 'NEMO-SI3_'+ModConf+'_'+ModExp
     elif gridType=='A':

@@ -419,7 +419,7 @@ if __name__ == '__main__':
         jrec = jt + kstrt ; # access into netCDF file...
 
         itmod = ztime_mod[jrec]; # time of model data (center of the average period which should = rdt)
-        itime = itmod - int(rdt/2.) ; # velocitie is average under the whole rdt, at the center!
+        itime = itmod - int(rdt/2.) ; # vector ice velocity is (should be) averaged under the whole rdt, at the center!
         ctime = e2c(itime)
         print('\n *** Reading record #'+str(jrec+1)+'/'+str(Nt0)+' in input file ==> date =',
               ctime,'(model:'+e2c(itmod)+')')

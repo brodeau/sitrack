@@ -120,47 +120,73 @@ if __name__ == '__main__':
 
         shpLon, shpLat = id_in.variables[cv_lon_t].shape, id_in.variables[cv_lat_t].shape
         l_2d_coordinates = ( len(shpLon)==2 and len(shpLat)==2 )
+        l_3d_coordinates = ( len(shpLon)==3 and len(shpLat)==3 )
 
         if l_2d_coordinates:
             if shpLon != shpLat :
                 print('ERROR: lon and lat variables are 2D and have different shapes!'); exit(0)
                 print(' *** Coordinates are 2D, irregular grid!')
+                (Ny,Nx) = shpLon
         elif ( len(shpLon)==1 and len(shpLat)==1 ):
             print(' *** Coordinates are 1D, regular grid!')
+        elif l_3d_coordinates:
+            print(' *** Coordinates are 3D, irregular grid!')
+            (_,Ny,Nx) = shpLon
         else:
             print('ERROR: could not figure out the shape of coordinates in inpute file...'); exit(0)
 
-        (Ny,Nx) = shpLon
+            
         del shpLon, shpLat
-        if not l_2d_coordinates:
-            # Fix me! should be easy, just create 2D arrays out of the 1D arrays...
-            print('FIX ME: regular grid!'); exit(0)
 
         print('       ==> domain shape: Ny, Nx =', Ny,Nx,'\n')
 
         xlat_t,xlon_t = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
-        xlat_t[:,:]   = id_in.variables[cv_lat_t][:,:]
-        xlon_t[:,:]   = id_in.variables[cv_lon_t][:,:]
-
+        if l_2d_coordinates:
+            xlat_t[:,:]   = id_in.variables[cv_lat_t][:,:]
+            xlon_t[:,:]   = id_in.variables[cv_lon_t][:,:]
+        if l_3d_coordinates:
+            xlat_t[:,:]   = id_in.variables[cv_lat_t][0,:,:]
+            xlon_t[:,:]   = id_in.variables[cv_lon_t][0,:,:]
+            
         xlat_f,xlon_f = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
-        xlat_f[:,:]   = id_in.variables[cv_lat_f][:,:]
-        xlon_f[:,:]   = id_in.variables[cv_lon_f][:,:]
+        if l_2d_coordinates:
+            xlat_f[:,:]   = id_in.variables[cv_lat_f][:,:]
+            xlon_f[:,:]   = id_in.variables[cv_lon_f][:,:]
+        if l_3d_coordinates:
+            xlat_f[:,:]   = id_in.variables[cv_lat_f][0,:,:]
+            xlon_f[:,:]   = id_in.variables[cv_lon_f][0,:,:]
 
         xlat_u,xlon_u = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
-        xlat_u[:,:]   = id_in.variables[cv_lat_u][:,:]
-        xlon_u[:,:]   = id_in.variables[cv_lon_u][:,:]
+        if l_2d_coordinates:
+            xlat_u[:,:]   = id_in.variables[cv_lat_u][:,:]
+            xlon_u[:,:]   = id_in.variables[cv_lon_u][:,:]
+        if l_3d_coordinates:
+            xlat_u[:,:]   = id_in.variables[cv_lat_u][0,:,:]
+            xlon_u[:,:]   = id_in.variables[cv_lon_u][0,:,:]
 
         xlat_v,xlon_v = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
-        xlat_v[:,:]   = id_in.variables[cv_lat_v][:,:]
-        xlon_v[:,:]   = id_in.variables[cv_lon_v][:,:]
+        if l_2d_coordinates:
+            xlat_v[:,:]   = id_in.variables[cv_lat_v][:,:]
+            xlon_v[:,:]   = id_in.variables[cv_lon_v][:,:]
+        if l_3d_coordinates:
+            xlat_v[:,:]   = id_in.variables[cv_lat_v][0,:,:]
+            xlon_v[:,:]   = id_in.variables[cv_lon_v][0,:,:]
 
         xe1u,xe2u = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
-        xe1u[:,:] = id_in.variables[cv_dx_u][:,:]
-        xe2u[:,:] = id_in.variables[cv_dy_u][:,:]
+        if l_2d_coordinates:
+            xe1u[:,:] = id_in.variables[cv_dx_u][:,:]
+            xe2u[:,:] = id_in.variables[cv_dy_u][:,:]
+        if l_3d_coordinates:
+            xe1u[:,:] = id_in.variables[cv_dx_u][0,:,:]
+            xe2u[:,:] = id_in.variables[cv_dy_u][0,:,:]
 
         xe1v,xe2v = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
-        xe1v[:,:] = id_in.variables[cv_dx_v][:,:]
-        xe2v[:,:] = id_in.variables[cv_dy_v][:,:]
+        if l_2d_coordinates:
+            xe1v[:,:] = id_in.variables[cv_dx_v][:,:]
+            xe2v[:,:] = id_in.variables[cv_dy_v][:,:]
+        if l_3d_coordinates:
+            xe1v[:,:] = id_in.variables[cv_dx_v][0,:,:]
+            xe2v[:,:] = id_in.variables[cv_dy_v][0,:,:]
 
 
 

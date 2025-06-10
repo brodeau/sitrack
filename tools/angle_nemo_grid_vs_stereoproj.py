@@ -18,6 +18,7 @@ from netCDF4 import Dataset
 from cartopy.crs import PlateCarree, NorthPolarStereo
 
 #import mojito   as mjt
+from climporn  import dump_2d_field
 import sitrack  as sit
 
 
@@ -150,18 +151,23 @@ if __name__ == '__main__':
     crs_src = PlateCarree() ;                                                      # geographic coordinates (lat,lon)
     crs_trg = NorthPolarStereo(central_longitude=rlon0, true_scale_latitude=rlat0) ; # that's (lon,lat) to (x,y)
 
-    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_u, xlat_u ).T
-
-    print(np.shape(zX.T))
-    
+    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_u, xlat_u ).T / 1000. ; # [km]
     xY_u[:,:] = zY.T    
     xX_u[:,:] = zX.T
 
 
-    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_v, xlat_v ).T
+    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_v, xlat_v ).T / 1000.  ; # [km]
     xY_v[:,:] = zY.T
     xX_v[:,:] = zX.T
 
+
+
+    dump_2d_field( 'Xu.nc', xX_u, name='X_u' )
+    dump_2d_field( 'Yu.nc', xY_u, name='Y_u' )    
+    dump_2d_field( 'Xv.nc', xX_v, name='X_v' )
+    dump_2d_field( 'Yv.nc', xY_v, name='Y_v' )    
+
+    
     exit(0)
 
 

@@ -13,6 +13,8 @@ from os import path, makedirs, environ
 import numpy as np
 from re import split
 
+from math import acos, asin, atan2, degrees
+
 from netCDF4 import Dataset
 
 from cartopy.crs import PlateCarree, NorthPolarStereo
@@ -53,9 +55,38 @@ def __argument_parsing__():
     return args.fin, args.nlont, args.nlatt, args.fout
 
 
+def dot(vA, vB):
+    return vA[0]*vB[0]+vA[1]*vB[1]
 
+def cross(vA, vB):
+    return vA[0]*vB[1] - vA[1]*vB[0]
 
+def ang(lineA, lineB):
+    # Get nicer vector form
+    vA = [(lineA[0][0]-lineA[1][0]), (lineA[0][1]-lineA[1][1])]
+    vB = [(lineB[0][0]-lineB[1][0]), (lineB[0][1]-lineB[1][1])]
+    # Get dot prod
+    dot_prod = dot(vA, vB)
+    cross_prod = cross(vA, vB)
+    # Get magnitudes
+    magA = dot(vA, vA)**0.5
+    magB = dot(vB, vB)**0.5
+    # Get cosine value
+    cosA = dot_prod/magA/magB
+    sinA = cross_prod/magA/magB
+    #
+    # Get angle in radians and then convert to degrees
+    #anglec = acos(dot_prod/magB/magA)
+    #angles = asin(cross_prod/magB/magA)
+    #
+    # Basically doing angle <- angle mod 360
+    #zang1 = degrees(anglec)%360
+    #zang2 = degrees(angles)
 
+    zang3 = degrees( atan2(cross_prod, dot_prod) )
+
+    return -zang3, cosA, -sinA
+    
 
 if __name__ == '__main__':
 
@@ -70,7 +101,7 @@ if __name__ == '__main__':
     cv_lon_u, cv_lat_u = str.replace( cv_lon_t, 't', 'u'), str.replace( cv_lat_t, 't', 'u')
     cv_lon_v, cv_lat_v = str.replace( cv_lon_t, 't', 'v'), str.replace( cv_lat_t, 't', 'v')
     cv_lon_f, cv_lat_f = str.replace( cv_lon_t, 't', 'f'), str.replace( cv_lat_t, 't', 'f')
-    
+
 
     print(cv_lon_f,cv_lat_f)
 
@@ -78,7 +109,7 @@ if __name__ == '__main__':
     cv_dy_u, cv_dy_v = 'e2u','e2v'
 
     list_v_read = [ cv_lon_t, cv_lat_t, cv_lon_u, cv_lat_u, cv_lon_v, cv_lat_v, cv_lat_f, cv_dx_u, cv_dx_v, cv_dy_u, cv_dy_v ]
-    
+
     sit.chck4f(cf_in)
 
 
@@ -90,7 +121,7 @@ if __name__ == '__main__':
             if not cvt in list_var:
                 print('ERROR: variable `'+cvt+'` not present in input file '+cf_in)
                 exit(0)
-        
+
         shpLon, shpLat = id_in.variables[cv_lon_t].shape, id_in.variables[cv_lat_t].shape
         l_2d_coordinates = ( len(shpLon)==2 and len(shpLat)==2 )
 
@@ -136,14 +167,10 @@ if __name__ == '__main__':
         xe2v[:,:] = id_in.variables[cv_dy_v][:,:]
 
 
-        
+
     ### closing `cf_in`...
 
 
-    #print(' *** Creating land-sea mask based on masked values of field "'+cv_field+'"...')
-    #imask = np.ones((Ny,Nx),dtype='int')
-    #imask[np.where(xfield <1.e-4)] = 0
-    #print(imask[::100,::100],'\n')
 
 
     xX_t,xY_t = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
@@ -155,7 +182,7 @@ if __name__ == '__main__':
     crs_trg = NorthPolarStereo(central_longitude=rlon0, true_scale_latitude=rlat0) ; # that's (lon,lat) to (x,y)
 
     zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_t, xlat_t ).T / 1000. ; # [km]
-    xY_t[:,:] = zY.T    
+    xY_t[:,:] = zY.T
     xX_t[:,:] = zX.T
 
 
@@ -165,99 +192,49 @@ if __name__ == '__main__':
 
     del zY, zX
 
+    if idebug>0:
+        dump_2d_field( 'Xt.nc', xX_t, name='X_t' )
+        dump_2d_field( 'Yt.nc', xY_t, name='Y_t' )
+        dump_2d_field( 'Xf.nc', xX_f, name='X_f' )
+        dump_2d_field( 'Yf.nc', xY_f, name='Y_f' )
 
-    dump_2d_field( 'Xt.nc', xX_t, name='X_t' )
-    dump_2d_field( 'Yt.nc', xY_t, name='Y_t' )    
-    dump_2d_field( 'Xf.nc', xX_f, name='X_f' )
-    dump_2d_field( 'Yf.nc', xY_f, name='Y_f' )    
 
 
+    xang_u, xcos_u, xsin_u = np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double)
+    xang_v, xcos_v, xsin_v = np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double)
 
-    #for jj in range(Ny):
+    
+
+    for jj in range(Ny):
+        for ji in range(Nx-1):
+            zLAB  = [ [xX_t[jj,ji],xY_t[jj,ji]], [xX_t[jj,ji+1],xY_t[jj,ji+1]] ]         ; # point A -> point B
+            zLAC  = [ [xX_t[jj,ji],xY_t[jj,ji]], [xX_t[jj,ji]+xe1u[jj,ji],xY_t[jj,ji]] ] ; # point A -> point A + (dx,0)
+            xang_u[jj,ji], xcos_u[jj,ji], xsin_u[jj,ji] = ang(zLAB, zLAC)
+
+    #for jj in range(Ny-1):
     #    for ji in range(Nx):
-    
+    #        zLAB  = [ [xX_t[jj,ji],xY_t[jj,ji]], [xX_t[jj+1,ji],xY_t[jj+1,ji]] ]         ; # point A -> point B
+    #        zLAC  = [ [xX_t[jj,ji],xY_t[jj,ji]], [xX_t[jj,ji]+xe2v[jj,ji],xY_t[jj,ji]] ] ; # point A -> point A + (0,dy)
+    #        xang_v[jj,ji], xcos_v[jj,ji], xsin_v[jj,ji] = ang(zLAB, zLAC)
+            
+    for jj in range(Ny):
+        for ji in range(1,Nx):
+            zLAB  = [ [xX_f[jj,ji-1],xY_f[jj,ji-1]], [xX_f[jj,ji],xY_f[jj,ji]] ]                 ; # point A -> point B
+            zLAC  = [ [xX_f[jj,ji-1],xY_f[jj,ji-1]], [xX_f[jj,ji-1]+xe1v[jj,ji],xY_f[jj,ji-1]] ] ; # point A -> point A + (dx,0)
+            xang_v[jj,ji], xcos_v[jj,ji], xsin_v[jj,ji] = ang(zLAB, zLAC)
 
-    
-    exit(0)
-
-
-
-    
-    xangle_u = np.zeros((Ny,Nx), dtype=np.double)
-
-
-
-
-    
-    exit(0)
-
-    
-    print(' *** Allocating arrays...')
-    # Geographic coordinates:
-    xlat_u,xlon_u = np.zeros((Ny,Nx), dtype=np.double)+rmasked, np.zeros((Ny,Nx), dtype=np.double)+rmasked
-    xlat_v,xlon_v = np.zeros((Ny,Nx), dtype=np.double)+rmasked, np.zeros((Ny,Nx), dtype=np.double)+rmasked
-    xlat_f,xlon_f = np.zeros((Ny,Nx), dtype=np.double)+rmasked, np.zeros((Ny,Nx), dtype=np.double)+rmasked
-    # Cartesian coordinates:
-    xYkm_t,xXkm_t = np.zeros((Ny,Nx), dtype=np.double)+rmasked, np.zeros((Ny,Nx), dtype=np.double)+rmasked
-    xYkm_u,xXkm_u = np.zeros((Ny,Nx), dtype=np.double)+rmasked, np.zeros((Ny,Nx), dtype=np.double)+rmasked
-    xYkm_v,xXkm_v = np.zeros((Ny,Nx), dtype=np.double)+rmasked, np.zeros((Ny,Nx), dtype=np.double)+rmasked
-    xYkm_f,xXkm_f = np.zeros((Ny,Nx), dtype=np.double)+rmasked, np.zeros((Ny,Nx), dtype=np.double)+rmasked
-    print('       .... done!\n')
-    
-    # Working with Cartesian coordinates:
-    xYkm_t, xXkm_t = sit.ConvertGeo2CartesianNPSkm( xlat_t, xlon_t,  lat0=70., lon0=-45. )
-
-    # Constructing U-points:
-    xYkm_u[:,0:Nx-1] = 0.5 * ( xYkm_t[:,0:Nx-1] + xYkm_t[:,1:Nx] )
-    xXkm_u[:,0:Nx-1] = 0.5 * ( xXkm_t[:,0:Nx-1] + xXkm_t[:,1:Nx] )
-
-    # Constructing V-points:
-    xYkm_v[0:Ny-1,:] = 0.5 * ( xYkm_t[0:Ny-1,:] + xYkm_t[1:Ny,:] )
-    xXkm_v[0:Ny-1,:] = 0.5 * ( xXkm_t[0:Ny-1,:] + xXkm_t[1:Ny,:] )
+    if idebug>0:
+        dump_2d_field( 'angle_u.nc', xang_u, name='angle_u' )
+        dump_2d_field( 'angle_v.nc', xang_v, name='angle_v' )
 
 
-
-    print(' *** Building F-points:')
-    for j in range(Ny-1):
-        for i in range(Nx-1):
-
-            zs1u = ( xYkm_u[j,i],xXkm_u[j,i] , xYkm_u[j+1,i],xXkm_u[j+1,i] ) ; # S-N segment that connects 2 U-point
-            zs1v = ( xYkm_v[j,i],xXkm_v[j,i] , xYkm_v[j,i+1],xXkm_v[j,i+1] ) ; # W-E segment that connects 2 V-point
-
-            zint = intersect( zs1u, zs1v )
-
-            if not zint:
-                print('ERROR: problem when building F-points...'); exit(0); # that should really not happen!
-
-            (xYkm_f[j,i],xXkm_f[j,i]) = zint
-
-        ###
-        if j%100 == 0: print('        * j =',j,'/',Ny-1)
-    ###
-    print('')
-
-    print(' *** Converting back to Geographic coordinates...')
-    xlat_u, xlon_u = sit.ConvertCartesianNPSkm2Geo( xYkm_u, xXkm_u,  lat0=70., lon0=-45. )
-    xlat_v, xlon_v = sit.ConvertCartesianNPSkm2Geo( xYkm_v, xXkm_v,  lat0=70., lon0=-45. )
-    xlat_f, xlon_f = sit.ConvertCartesianNPSkm2Geo( xYkm_f, xXkm_f,  lat0=70., lon0=-45. )
-
-
-    print(' *** Computing e1t and e2t...')
-    xe2t, xe1t = np.zeros((Ny,Nx), dtype=np.double)+rmasked, np.zeros((Ny,Nx), dtype=np.double)+rmasked
-    xe2t[1:Ny,:] = 1000. * (xYkm_u[1:Ny,:] - xYkm_u[0:Ny-1,:]) # in m 
-    xe1t[:,1:Nx] = 1000. * (xXkm_u[:,1:Nx] - xXkm_u[:,0:Nx-1]) # in m 
-
-
+        
     # Writing output file:
     id_out = Dataset(cf_out, 'w', format='NETCDF4')
 
     id_out.createDimension('y', Ny)
     id_out.createDimension('x', Nx)
 
-
-    id_mskt  = id_out.createVariable( 'tmask' ,'f4',('y','x',), zlib=True, complevel=7 )
-    id_mskt[:,:] = imask[:,:].astype(np.single)
-    
     id_lat_t  = id_out.createVariable( 'gphit' ,'f8',('y','x',), zlib=True, complevel=7 )
     id_lat_t[:,:] = xlat_t[:,:] ; id_lat_t.units = 'degrees_north'
     id_lon_t  = id_out.createVariable( 'glamt' ,'f8',('y','x',), zlib=True, complevel=7 )
@@ -266,7 +243,7 @@ if __name__ == '__main__':
     id_lat_u  = id_out.createVariable( 'gphiu' ,'f8',('y','x',), zlib=True, complevel=7 )
     id_lat_u[:,:] = xlat_u[:,:] ; id_lat_u.units = 'degrees_north'
     id_lon_u  = id_out.createVariable( 'glamu' ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_lon_u[:,:] = xlon_u[:,:] ; id_lon_u.units = 'degrees_east'    
+    id_lon_u[:,:] = xlon_u[:,:] ; id_lon_u.units = 'degrees_east'
     #
     id_lat_v  = id_out.createVariable( 'gphiv' ,'f8',('y','x',), zlib=True, complevel=7 )
     id_lat_v[:,:] = xlat_v[:,:] ; id_lat_v.units = 'degrees_north'
@@ -279,34 +256,25 @@ if __name__ == '__main__':
     id_lon_f[:,:] = xlon_f[:,:] ; id_lon_f.units = 'degrees_east'
     #
     #
-    id_Ykm_t  = id_out.createVariable( sit.nm_y_t ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_Ykm_t[:,:] = xYkm_t[:,:] ; id_Ykm_t.units = 'km'
-    id_Xkm_t  = id_out.createVariable( sit.nm_x_t ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_Xkm_t[:,:] = xXkm_t[:,:] ; id_Xkm_t.units = 'km'
+    id_ang_u  = id_out.createVariable( 'angle_u' ,'f8',('y','x',), zlib=True, complevel=7 )
+    id_ang_u[:,:] = xang_u[:,:] ; id_ang_u.units = 'degrees'
     #
-    id_Ykm_u  = id_out.createVariable( sit.nm_y_u ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_Ykm_u[:,:] = xYkm_u[:,:] ; id_Ykm_u.units = 'km'
-    id_Xkm_u  = id_out.createVariable( sit.nm_x_u ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_Xkm_u[:,:] = xXkm_u[:,:] ; id_Xkm_u.units = 'km'    
+    id_ang_v  = id_out.createVariable( 'angle_v' ,'f8',('y','x',), zlib=True, complevel=7 )
+    id_ang_v[:,:] = xang_v[:,:] ; id_ang_v.units = 'degrees'
     #
-    id_Ykm_v  = id_out.createVariable( sit.nm_y_v ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_Ykm_v[:,:] = xYkm_v[:,:] ; id_Ykm_v.units = 'km'
-    id_Xkm_v  = id_out.createVariable( sit.nm_x_v ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_Xkm_v[:,:] = xXkm_v[:,:] ; id_Xkm_v.units = 'km'
+    id_cos_u  = id_out.createVariable( 'cosa_u' ,'f8',('y','x',), zlib=True, complevel=7 )
+    id_cos_u[:,:] = xcos_u[:,:] ; id_cos_u.units = ''
+    id_sin_u  = id_out.createVariable( 'sina_u' ,'f8',('y','x',), zlib=True, complevel=7 )
+    id_sin_u[:,:] = xsin_u[:,:] ; id_sin_u.units = '-'
     #
-    id_Ykm_f  = id_out.createVariable( sit.nm_y_f ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_Ykm_f[:,:] = xYkm_f[:,:] ; id_Ykm_f.units = 'km'
-    id_Xkm_f  = id_out.createVariable( sit.nm_x_f ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_Xkm_f[:,:] = xXkm_f[:,:] ; id_Xkm_f.units = 'km'
+    id_cos_v  = id_out.createVariable( 'cosa_v' ,'f8',('y','x',), zlib=True, complevel=7 )
+    id_cos_v[:,:] = xcos_v[:,:] ; id_cos_v.units = ''
+    id_sin_v  = id_out.createVariable( 'sina_v' ,'f8',('y','x',), zlib=True, complevel=7 )
+    id_sin_v[:,:] = xsin_v[:,:] ; id_sin_v.units = ''
     #
     #
-    id_e2t  = id_out.createVariable( 'e2t' ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_e2t[:,:] = xe2t[:,:] ; id_e2t.units = 'm'
-    id_e1t  = id_out.createVariable( 'e1t' ,'f8',('y','x',), zlib=True, complevel=7 )
-    id_e1t[:,:] = xe1t[:,:] ; id_e1t.units = 'm'
     #
-    #
-    id_out.about = '`lat_lon_to_mesh.py` of `sitrack`, based on file "'+cf_in+'"'
+    id_out.about = '`angle_nemo_grid_vs_stereoproj.py` of `sitrack`, based on file "'+cf_in+'"'
     id_out.close()
 
     print('\n *** '+cf_out+' written!\n')
@@ -317,19 +285,19 @@ if __name__ == '__main__':
     if iplot>0:
 
         import climporn as cp
-        
+
         cfig = 'map_mesh'
         isubsamp = 10
         DPIsvg = 100
         rLat0 = 75.
-        
+
         ii = cp.PlotGridGlobe( xlon_f[:,:], xlat_f[:,:],
                                chemi='N', lon0=-35., lat0=rLat0, cfig_name=cfig+'_NH_35W_f_OUT_ortho_WHITE.svg',
                                nsubsamp=isubsamp, rdpi=DPIsvg, ldark=False )
 
-        
-    
 
 
 
-    
+
+
+

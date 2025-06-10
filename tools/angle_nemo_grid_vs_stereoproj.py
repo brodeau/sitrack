@@ -69,16 +69,15 @@ if __name__ == '__main__':
 
     cv_lon_u, cv_lat_u = str.replace( cv_lon_t, 't', 'u'), str.replace( cv_lat_t, 't', 'u')
     cv_lon_v, cv_lat_v = str.replace( cv_lon_t, 't', 'v'), str.replace( cv_lat_t, 't', 'v')
+    cv_lon_f, cv_lat_f = str.replace( cv_lon_t, 't', 'f'), str.replace( cv_lat_t, 't', 'f')
+    
 
-    print(cv_lon_u)
-    print(cv_lat_u)
-    print(cv_lon_v)
-    print(cv_lat_v)
+    print(cv_lon_f,cv_lat_f)
 
     cv_dx_u, cv_dx_v = 'e1u','e1v'
     cv_dy_u, cv_dy_v = 'e2u','e2v'
 
-    list_v_read = [ cv_lon_t, cv_lat_t, cv_lon_u, cv_lat_u, cv_lon_v, cv_lat_v, cv_dx_u, cv_dx_v, cv_dy_u, cv_dy_v ]
+    list_v_read = [ cv_lon_t, cv_lat_t, cv_lon_u, cv_lat_u, cv_lon_v, cv_lat_v, cv_lat_f, cv_dx_u, cv_dx_v, cv_dy_u, cv_dy_v ]
     
     sit.chck4f(cf_in)
 
@@ -116,6 +115,10 @@ if __name__ == '__main__':
         xlat_t[:,:]   = id_in.variables[cv_lat_t][:,:]
         xlon_t[:,:]   = id_in.variables[cv_lon_t][:,:]
 
+        xlat_f,xlon_f = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
+        xlat_f[:,:]   = id_in.variables[cv_lat_f][:,:]
+        xlon_f[:,:]   = id_in.variables[cv_lon_f][:,:]
+
         xlat_u,xlon_u = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
         xlat_u[:,:]   = id_in.variables[cv_lat_u][:,:]
         xlon_u[:,:]   = id_in.variables[cv_lon_u][:,:]
@@ -143,29 +146,36 @@ if __name__ == '__main__':
     #print(imask[::100,::100],'\n')
 
 
-    xX_u,xY_u = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
-    xX_v,xY_v = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
+    xX_t,xY_t = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
+    xX_f,xY_f = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
 
 
 
     crs_src = PlateCarree() ;                                                      # geographic coordinates (lat,lon)
     crs_trg = NorthPolarStereo(central_longitude=rlon0, true_scale_latitude=rlat0) ; # that's (lon,lat) to (x,y)
 
-    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_u, xlat_u ).T / 1000. ; # [km]
-    xY_u[:,:] = zY.T    
-    xX_u[:,:] = zX.T
+    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_t, xlat_t ).T / 1000. ; # [km]
+    xY_t[:,:] = zY.T    
+    xX_t[:,:] = zX.T
 
 
-    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_v, xlat_v ).T / 1000.  ; # [km]
-    xY_v[:,:] = zY.T
-    xX_v[:,:] = zX.T
+    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_f, xlat_f ).T / 1000.  ; # [km]
+    xY_f[:,:] = zY.T
+    xX_f[:,:] = zX.T
+
+    del zY, zX
+
+
+    dump_2d_field( 'Xt.nc', xX_t, name='X_t' )
+    dump_2d_field( 'Yt.nc', xY_t, name='Y_t' )    
+    dump_2d_field( 'Xf.nc', xX_f, name='X_f' )
+    dump_2d_field( 'Yf.nc', xY_f, name='Y_f' )    
 
 
 
-    dump_2d_field( 'Xu.nc', xX_u, name='X_u' )
-    dump_2d_field( 'Yu.nc', xY_u, name='Y_u' )    
-    dump_2d_field( 'Xv.nc', xX_v, name='X_v' )
-    dump_2d_field( 'Yv.nc', xY_v, name='Y_v' )    
+    #for jj in range(Ny):
+    #    for ji in range(Nx):
+    
 
     
     exit(0)
@@ -173,7 +183,7 @@ if __name__ == '__main__':
 
 
     
-    xangle = np.zeros((Ny,Nx), dtype=np.double)
+    xangle_u = np.zeros((Ny,Nx), dtype=np.double)
 
 
 

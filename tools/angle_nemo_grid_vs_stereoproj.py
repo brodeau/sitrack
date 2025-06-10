@@ -9,9 +9,7 @@
 '''
 
 from sys import argv, exit
-from os import path, makedirs, environ
 import numpy as np
-from re import split
 
 from math import acos, asin, atan2, degrees
 
@@ -19,16 +17,12 @@ from netCDF4 import Dataset
 
 from cartopy.crs import PlateCarree, NorthPolarStereo
 
-#import mojito   as mjt
 from climporn  import dump_2d_field
-import sitrack  as sit
+from sitrack import chck4f
 
+idebug=0
 
-rmasked = -999.
-
-idebug=1
-iplot=1
-
+# Parameters of Polar Stereographic projection:
 rlon0 = -45.
 rlat0 =  70.
 
@@ -86,7 +80,9 @@ def ang(lineA, lineB):
     zang3 = degrees( atan2(cross_prod, dot_prod) )
 
     return -zang3, cosA, -sinA
-    
+
+
+
 
 if __name__ == '__main__':
 
@@ -110,7 +106,7 @@ if __name__ == '__main__':
 
     list_v_read = [ cv_lon_t, cv_lat_t, cv_lon_u, cv_lat_u, cv_lon_v, cv_lat_v, cv_lat_f, cv_dx_u, cv_dx_v, cv_dy_u, cv_dy_v ]
 
-    sit.chck4f(cf_in)
+    chck4f(cf_in)
 
 
     with Dataset(cf_in) as id_in:
@@ -171,12 +167,8 @@ if __name__ == '__main__':
     ### closing `cf_in`...
 
 
-
-
     xX_t,xY_t = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
     xX_f,xY_f = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
-
-
 
     crs_src = PlateCarree() ;                                                      # geographic coordinates (lat,lon)
     crs_trg = NorthPolarStereo(central_longitude=rlon0, true_scale_latitude=rlat0) ; # that's (lon,lat) to (x,y)
@@ -229,6 +221,7 @@ if __name__ == '__main__':
 
 
         
+        
     # Writing output file:
     id_out = Dataset(cf_out, 'w', format='NETCDF4')
 
@@ -278,26 +271,3 @@ if __name__ == '__main__':
     id_out.close()
 
     print('\n *** '+cf_out+' written!\n')
-
-
-
-
-    if iplot>0:
-
-        import climporn as cp
-
-        cfig = 'map_mesh'
-        isubsamp = 10
-        DPIsvg = 100
-        rLat0 = 75.
-
-        ii = cp.PlotGridGlobe( xlon_f[:,:], xlat_f[:,:],
-                               chemi='N', lon0=-35., lat0=rLat0, cfig_name=cfig+'_NH_35W_f_OUT_ortho_WHITE.svg',
-                               nsubsamp=isubsamp, rdpi=DPIsvg, ldark=False )
-
-
-
-
-
-
-

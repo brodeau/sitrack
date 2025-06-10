@@ -141,6 +141,23 @@ if __name__ == '__main__':
     #imask[np.where(xfield <1.e-4)] = 0
     #print(imask[::100,::100],'\n')
 
+
+    xX_u,xY_u = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
+    xX_v,xY_v = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
+
+
+
+    crs_src = PlateCarree() ;                                                      # geographic coordinates (lat,lon)
+    crs_trg = NorthPolarStereo(central_longitude=rlon0, true_scale_latitude=rlat0) ; # that's (lon,lat) to (x,y)
+
+    zX,zY,_ =  crs_trg.transform_points( crs_src, xX_u, xY_u ).T
+
+    print(zX)
+    exit(0)
+
+
+
+    
     xangle = np.zeros((Ny,Nx), dtype=np.double)
 
 

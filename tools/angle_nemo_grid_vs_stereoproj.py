@@ -15,8 +15,10 @@ from re import split
 
 from netCDF4 import Dataset
 
+from cartopy.crs import PlateCarree, NorthPolarStereo
+
 #import mojito   as mjt
-#import sitrack  as sit
+import sitrack  as sit
 
 
 rmasked = -999.
@@ -38,16 +40,16 @@ def __argument_parsing__():
     #
     # Required:
     rqrdNam = parser.add_argument_group('required arguments')
-    rqrdNam.add_argument('-i', '--fin' , required=True,            help='metrics (meshmask) or coordinate files of the NEMO horizontal domain')
+    rqrdNam.add_argument('-i', '--fin' , required=True,            help='metrics (meshmask) file of the NEMO horizontal domain')
     #
     # Optional:
-    parser.add_argument('-x', '--nlon'  , default='nav_lon',       help='name of longitude in input file (default="nav_lon")')
-    parser.add_argument('-y', '--nlat'  , default='nav_lat',       help='name of latitude in input file (default="nav_lat")')
-    parser.add_argument('-o', '--fout'  , default='angle_mesh.nc', help='output file (default="angle_mesh.nc")')
+    parser.add_argument('-xt', '--nlont', default='glamt',         help='name of longitude (at center of grid cells) in input file (default="glamt")')
+    parser.add_argument('-yt', '--nlatt', default='gphit',         help='name of latitude  (at center of grid cells) in input file (default="glamf")')
+    parser.add_argument('-o',  '--fout' , default='angle_mesh.nc', help='output file (default="angle_mesh.nc")')
     #
     args = parser.parse_args()
     #
-    return args.fin, args.nlon, args.nlat, args.fout
+    return args.fin, args.nlont, args.nlatt, args.fout
 
 
 
@@ -58,17 +60,36 @@ if __name__ == '__main__':
 
     print('')
 
-    cf_in, cv_lon, cv_lat, cf_out = __argument_parsing__()
+    cf_in, cv_lon_t, cv_lat_t, cf_out = __argument_parsing__()
 
     print(' *** Input file: '+cf_in)
-    print('                => name for longitude and latitude: "'+cv_lon+'", "'+cv_lat+'"\n')
+    print('                => name for longitude and latitude: "'+cv_lon_t+'", "'+cv_lat_t+'"\n')
 
+
+    cv_lon_u, cv_lat_u = str.replace( cv_lon_t, 't', 'u'), str.replace( cv_lat_t, 't', 'u')
+    cv_lon_v, cv_lat_v = str.replace( cv_lon_t, 't', 'v'), str.replace( cv_lat_t, 't', 'v')
+
+    print(cv_lon_u)
+    print(cv_lat_u)
+    print(cv_lon_v)
+    print(cv_lat_v)
+
+
+    list_v_read = [ cv_lon_t, cv_lat_t, cv_lon_u, cv_lat_u, cv_lon_v, cv_lat_v ]
+    
     sit.chck4f(cf_in)
 
 
     with Dataset(cf_in) as id_in:
 
-        shpLon, shpLat = id_in.variables[cv_lon].shape, id_in.variables[cv_lat].shape
+        list_var = list(id_in.variables.keys())
+        #print(list_var)
+        for cvt in list_v_read:
+            if not cvt in list_var:
+                print('ERROR: variable `'+cvt+'` not present in input file '+cf_in)
+                exit(0)
+        
+        shpLon, shpLat = id_in.variables[cv_lon_t].shape, id_in.variables[cv_lat_t].shape
         l_2d_coordinates = ( len(shpLon)==2 and len(shpLat)==2 )
 
         if l_2d_coordinates:
@@ -85,12 +106,12 @@ if __name__ == '__main__':
         if not l_2d_coordinates:
             # Fix me! should be easy, just create 2D arrays out of the 1D arrays...
             print('FIX ME: regular grid!'); exit(0)
-            print('       ==> domain shape: Ny, Nx =', Ny,Nx,'\n')
 
+        print('       ==> domain shape: Ny, Nx =', Ny,Nx,'\n')
 
         xlat_t,xlon_t = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
-        xlat_t[:,:] = id_in.variables[cv_lat][:,:]
-        xlon_t[:,:] = id_in.variables[cv_lon][:,:]
+        xlat_t[:,:] = id_in.variables[cv_lat_t][:,:]
+        xlon_t[:,:] = id_in.variables[cv_lon_t][:,:]
 
     ### closing `cf_in`...
 
@@ -100,7 +121,12 @@ if __name__ == '__main__':
     #imask[np.where(xfield <1.e-4)] = 0
     #print(imask[::100,::100],'\n')
 
+    xangle = np.zeros((Ny,Nx), dtype=np.double)
 
+
+
+
+    
     exit(0)
 
     

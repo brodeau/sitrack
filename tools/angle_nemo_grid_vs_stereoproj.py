@@ -150,9 +150,18 @@ if __name__ == '__main__':
     crs_src = PlateCarree() ;                                                      # geographic coordinates (lat,lon)
     crs_trg = NorthPolarStereo(central_longitude=rlon0, true_scale_latitude=rlat0) ; # that's (lon,lat) to (x,y)
 
-    zX,zY,_ =  crs_trg.transform_points( crs_src, xX_u, xY_u ).T
+    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_u, xlat_u ).T
 
-    print(zX)
+    print(np.shape(zX.T))
+    
+    xY_u[:,:] = zY.T    
+    xX_u[:,:] = zX.T
+
+
+    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_v, xlat_v ).T
+    xY_v[:,:] = zY.T
+    xX_v[:,:] = zX.T
+
     exit(0)
 
 

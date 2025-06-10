@@ -74,8 +74,10 @@ if __name__ == '__main__':
     print(cv_lon_v)
     print(cv_lat_v)
 
+    cv_dx_u, cv_dx_v = 'e1u','e1v'
+    cv_dy_u, cv_dy_v = 'e2u','e2v'
 
-    list_v_read = [ cv_lon_t, cv_lat_t, cv_lon_u, cv_lat_u, cv_lon_v, cv_lat_v ]
+    list_v_read = [ cv_lon_t, cv_lat_t, cv_lon_u, cv_lat_u, cv_lon_v, cv_lat_v, cv_dx_u, cv_dx_v, cv_dy_u, cv_dy_v ]
     
     sit.chck4f(cf_in)
 
@@ -110,9 +112,27 @@ if __name__ == '__main__':
         print('       ==> domain shape: Ny, Nx =', Ny,Nx,'\n')
 
         xlat_t,xlon_t = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
-        xlat_t[:,:] = id_in.variables[cv_lat_t][:,:]
-        xlon_t[:,:] = id_in.variables[cv_lon_t][:,:]
+        xlat_t[:,:]   = id_in.variables[cv_lat_t][:,:]
+        xlon_t[:,:]   = id_in.variables[cv_lon_t][:,:]
 
+        xlat_u,xlon_u = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
+        xlat_u[:,:]   = id_in.variables[cv_lat_u][:,:]
+        xlon_u[:,:]   = id_in.variables[cv_lon_u][:,:]
+
+        xlat_v,xlon_v = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
+        xlat_v[:,:]   = id_in.variables[cv_lat_v][:,:]
+        xlon_v[:,:]   = id_in.variables[cv_lon_v][:,:]
+
+        xe1u,xe2u = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
+        xe1u[:,:] = id_in.variables[cv_dx_u][:,:]
+        xe2u[:,:] = id_in.variables[cv_dy_u][:,:]
+
+        xe1v,xe2v = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
+        xe1v[:,:] = id_in.variables[cv_dx_v][:,:]
+        xe2v[:,:] = id_in.variables[cv_dy_v][:,:]
+
+
+        
     ### closing `cf_in`...
 
 

@@ -125,8 +125,8 @@ if __name__ == '__main__':
         if l_2d_coordinates:
             if shpLon != shpLat :
                 print('ERROR: lon and lat variables are 2D and have different shapes!'); exit(0)
-                print(' *** Coordinates are 2D, irregular grid!')
-                (Ny,Nx) = shpLon
+            print(' *** Coordinates are 2D, irregular grid!')
+            (Ny,Nx) = shpLon
         elif ( len(shpLon)==1 and len(shpLat)==1 ):
             print(' *** Coordinates are 1D, regular grid!')
         elif l_3d_coordinates:

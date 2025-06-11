@@ -41,7 +41,7 @@ def __argument_parsing__():
     #
     # Optional:
     parser.add_argument('-xt', '--nlont', default='glamt',         help='name of longitude (at center of grid cells) in input file (default="glamt")')
-    parser.add_argument('-yt', '--nlatt', default='gphit',         help='name of latitude  (at center of grid cells) in input file (default="glamf")')
+    parser.add_argument('-yt', '--nlatt', default='gphit',         help='name of latitude  (at center of grid cells) in input file (default="gphit")')
     parser.add_argument('-o',  '--fout' , default='angle_mesh.nc', help='output file (default="angle_mesh.nc")')
     #
     args = parser.parse_args()

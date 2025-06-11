@@ -104,7 +104,7 @@ if __name__ == '__main__':
     cv_dx_u, cv_dx_v = 'e1u','e1v'
     cv_dy_u, cv_dy_v = 'e2u','e2v'
 
-    list_v_read = [ cv_lon_t, cv_lat_t, cv_lon_u, cv_lat_u, cv_lon_v, cv_lat_v, cv_lat_f, cv_dx_u, cv_dx_v, cv_dy_u, cv_dy_v ]
+    list_v_read = [ cv_lon_t, cv_lat_t, cv_lon_u, cv_lat_u, cv_lon_v, cv_lat_v, cv_lon_f, cv_lat_f, cv_dx_u, cv_dx_v, cv_dy_u, cv_dy_v ]
 
     chck4f(cf_in)
 

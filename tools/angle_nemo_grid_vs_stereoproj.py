@@ -174,19 +174,19 @@ if __name__ == '__main__':
 
         xe1u,xe2u = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
         if l_2d_coordinates:
-            xe1u[:,:] = id_in.variables[cv_dx_u][:,:]
-            xe2u[:,:] = id_in.variables[cv_dy_u][:,:]
+            xe1u[:,:] = id_in.variables[cv_dx_u][:,:] * 1.e-3 ; # [km]
+            xe2u[:,:] = id_in.variables[cv_dy_u][:,:] * 1.e-3 ; # [km]
         if l_3d_coordinates:
-            xe1u[:,:] = id_in.variables[cv_dx_u][0,:,:]
-            xe2u[:,:] = id_in.variables[cv_dy_u][0,:,:]
+            xe1u[:,:] = id_in.variables[cv_dx_u][0,:,:] * 1.e-3 ; # [km]
+            xe2u[:,:] = id_in.variables[cv_dy_u][0,:,:] * 1.e-3 ; # [km]
 
         xe1v,xe2v = np.zeros((Ny,Nx), dtype=np.double),np.zeros((Ny,Nx), dtype=np.double)
         if l_2d_coordinates:
-            xe1v[:,:] = id_in.variables[cv_dx_v][:,:]
-            xe2v[:,:] = id_in.variables[cv_dy_v][:,:]
+            xe1v[:,:] = id_in.variables[cv_dx_v][:,:] * 1.e-3 ; # [km]
+            xe2v[:,:] = id_in.variables[cv_dy_v][:,:] * 1.e-3 ; # [km]
         if l_3d_coordinates:
-            xe1v[:,:] = id_in.variables[cv_dx_v][0,:,:]
-            xe2v[:,:] = id_in.variables[cv_dy_v][0,:,:]
+            xe1v[:,:] = id_in.variables[cv_dx_v][0,:,:] * 1.e-3 ; # [km]
+            xe2v[:,:] = id_in.variables[cv_dy_v][0,:,:] * 1.e-3 ; # [km]
 
 
 
@@ -199,14 +199,14 @@ if __name__ == '__main__':
     crs_src = PlateCarree() ;                                                      # geographic coordinates (lat,lon)
     crs_trg = NorthPolarStereo(central_longitude=rlon0, true_scale_latitude=rlat0) ; # that's (lon,lat) to (x,y)
 
-    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_t, xlat_t ).T / 1000. ; # [km]
-    xY_t[:,:] = zY.T
-    xX_t[:,:] = zX.T
+    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_t, xlat_t ).T * 1.e-3 ; # [km]
+    xY_t[:,:] = zY.T ; # [km]
+    xX_t[:,:] = zX.T ; # [km]
 
 
-    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_f, xlat_f ).T / 1000.  ; # [km]
-    xY_f[:,:] = zY.T
-    xX_f[:,:] = zX.T
+    zX,zY,_ =  crs_trg.transform_points( crs_src, xlon_f, xlat_f ).T * 1.e-3  ; # [km]
+    xY_f[:,:] = zY.T ; # [km]
+    xX_f[:,:] = zX.T ; # [km]
 
     del zY, zX
 

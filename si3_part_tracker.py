@@ -227,7 +227,12 @@ if __name__ == '__main__':
     if gridType=='C' and iUVstrategy==1:
         # Get extra U,V-point metrics:
         xYv, xXv, xYu, xXu = sit.GetModelUVGrid( cf_mm )
-        
+    
+    # Computing the cosine and sine of rotation angle between NEMO C-grid cells and polar stereographic projection
+    _,xcosa_u,xsina_u,_,xcosa_v,xsina_v = sit.compute_distorsion_angle(xXt,xYt,xXf,xYf,xe1U,xe1V)
+
+    del xe1U, xe1V
+
     # Allocating arrays for model data:
     (Nj,Ni) = np.shape( imaskt )
     xUu = np.zeros((Nj,Ni))

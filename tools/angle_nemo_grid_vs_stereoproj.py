@@ -17,10 +17,12 @@ from netCDF4 import Dataset
 
 from cartopy.crs import PlateCarree, NorthPolarStereo
 
-from climporn  import dump_2d_field
-from sitrack import chck4f
+import sitrack as sit
 
 idebug=0
+
+if idebug>0:
+    from climporn  import dump_2d_field
 
 # Parameters of Polar Stereographic projection:
 rlon0 = -45.
@@ -49,41 +51,6 @@ def __argument_parsing__():
     return args.fin, args.nlont, args.nlatt, args.fout
 
 
-def dot(vA, vB):
-    return vA[0]*vB[0]+vA[1]*vB[1]
-
-def cross(vA, vB):
-    return vA[0]*vB[1] - vA[1]*vB[0]
-
-def ang(lineA, lineB):
-    # Get nicer vector form
-    vA = [(lineA[0][0]-lineA[1][0]), (lineA[0][1]-lineA[1][1])]
-    vB = [(lineB[0][0]-lineB[1][0]), (lineB[0][1]-lineB[1][1])]
-    # Get dot prod
-    dot_prod = dot(vA, vB)
-    cross_prod = cross(vA, vB)
-    # Get magnitudes
-    magA = dot(vA, vA)**0.5
-    magB = dot(vB, vB)**0.5
-    # Get cosine value
-    cosA = dot_prod/magA/magB
-    sinA = cross_prod/magA/magB
-    #
-    # Get angle in radians and then convert to degrees
-    #anglec = acos(dot_prod/magB/magA)
-    #angles = asin(cross_prod/magB/magA)
-    #
-    # Basically doing angle <- angle mod 360
-    #zang1 = degrees(anglec)%360
-    #zang2 = degrees(angles)
-
-    zang3 = degrees( atan2(cross_prod, dot_prod) )
-
-    return -zang3, cosA, -sinA
-
-
-
-
 if __name__ == '__main__':
 
     print('')
@@ -106,7 +73,7 @@ if __name__ == '__main__':
 
     list_v_read = [ cv_lon_t, cv_lat_t, cv_lon_u, cv_lat_u, cv_lon_v, cv_lat_v, cv_lon_f, cv_lat_f, cv_dx_u, cv_dx_v, cv_dy_u, cv_dy_v ]
 
-    chck4f(cf_in)
+    sit.chck4f(cf_in)
 
 
     with Dataset(cf_in) as id_in:
@@ -218,28 +185,8 @@ if __name__ == '__main__':
 
 
 
-    xang_u, xcos_u, xsin_u = np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double)
-    xang_v, xcos_v, xsin_v = np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double)
+    xang_u, xcos_u, xsin_u, xang_v, xcos_v, xsin_v = sit.compute_distorsion_angle(xX_t,xY_t,xX_f,xY_f,xe1u,xe1v)
 
-    
-
-    for jj in range(Ny):
-        for ji in range(Nx-1):
-            zLAB  = [ [xX_t[jj,ji],xY_t[jj,ji]], [xX_t[jj,ji+1],xY_t[jj,ji+1]] ]         ; # point A -> point B
-            zLAC  = [ [xX_t[jj,ji],xY_t[jj,ji]], [xX_t[jj,ji]+xe1u[jj,ji],xY_t[jj,ji]] ] ; # point A -> point A + (dx,0)
-            xang_u[jj,ji], xcos_u[jj,ji], xsin_u[jj,ji] = ang(zLAB, zLAC)
-
-    #for jj in range(Ny-1):
-    #    for ji in range(Nx):
-    #        zLAB  = [ [xX_t[jj,ji],xY_t[jj,ji]], [xX_t[jj+1,ji],xY_t[jj+1,ji]] ]         ; # point A -> point B
-    #        zLAC  = [ [xX_t[jj,ji],xY_t[jj,ji]], [xX_t[jj,ji]+xe2v[jj,ji],xY_t[jj,ji]] ] ; # point A -> point A + (0,dy)
-    #        xang_v[jj,ji], xcos_v[jj,ji], xsin_v[jj,ji] = ang(zLAB, zLAC)
-            
-    for jj in range(Ny):
-        for ji in range(1,Nx):
-            zLAB  = [ [xX_f[jj,ji-1],xY_f[jj,ji-1]], [xX_f[jj,ji],xY_f[jj,ji]] ]                 ; # point A -> point B
-            zLAC  = [ [xX_f[jj,ji-1],xY_f[jj,ji-1]], [xX_f[jj,ji-1]+xe1v[jj,ji],xY_f[jj,ji-1]] ] ; # point A -> point A + (dx,0)
-            xang_v[jj,ji], xcos_v[jj,ji], xsin_v[jj,ji] = ang(zLAB, zLAC)
 
     if idebug>0:
         dump_2d_field( 'angle_u.nc', xang_u, name='angle_u' )

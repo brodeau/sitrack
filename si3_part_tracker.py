@@ -222,7 +222,7 @@ if __name__ == '__main__':
         makedirs( cd, exist_ok=True )
 
     # Getting model grid metrics and friends in the coordinates/meshmask file:
-    imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM = sit.GetModelGrid( cf_mm )
+    imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM, xe1U, xe1V = sit.GetModelGrid( cf_mm , also_e1UV=True )
 
     if gridType=='C' and iUVstrategy==1:
         # Get extra U,V-point metrics:

@@ -537,8 +537,8 @@ if __name__ == '__main__':
                 if idebug>0: print('      ==> displacement in model grid reference frame during `dt`: dx,dy =',dx,dy, 'm')
 
                 # => position [km] of buoy after this time step will be:
-                rx_nxt = rx + dx/1000. ; # [km]
-                ry_nxt = ry + dy/1000. ; # [km]
+                rx_nxt = rx + (dx*xcosa_u[jT,iT]-dy*xsina_u[jT,iT])/1000. ; # [km]
+                ry_nxt = ry + (dx*xsina_u[jT,iT]+dy*xcosa_u[jT,iT])/1000. ; # [km]
                 xPosC[jt+1,jP,:] = [ ry_nxt, rx_nxt ]
                 xmask[jt+1,jP,:] = [    1  ,    1   ]
                 if lvlist:

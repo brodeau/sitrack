@@ -19,7 +19,7 @@ from cartopy.crs import PlateCarree, NorthPolarStereo
 
 import sitrack as sit
 
-idebug=1
+idebug=0
 
 if idebug>0:
     from climporn  import dump_2d_field

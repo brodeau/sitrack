@@ -52,7 +52,7 @@ def ConvertTimeToEpoch( vtime, units, calendar ):
 
     
 
-def GetModelGrid( fNCmeshmask, alsoF=False , also_e1UV=False):
+def GetModelGrid( fNCmeshmask, alsoF=False , also_e1T=False):
 
     l_CartesianCoordPresent = False ; # by default we assume that Cartesian X,Y coordinates are not present in `fNCmeshmask` !
     
@@ -84,8 +84,8 @@ def GetModelGrid( fNCmeshmask, alsoF=False , also_e1UV=False):
             zlatT  = id_mm.variables['gphit'][:,:]
             ze1T   = id_mm.variables['e1t'][:,:] * 1.e-3 ; # km
             ze2T   = id_mm.variables['e2t'][:,:] * 1.e-3 ; # km
-            ze1U   = id_mm.variables['e1u'][:,:] * 1.e-3 ; # km
-            ze1V   = id_mm.variables['e1v'][:,:] * 1.e-3 ; # km
+            #ze1U   = id_mm.variables['e1u'][:,:] * 1.e-3 ; # km
+            #ze1V   = id_mm.variables['e1v'][:,:] * 1.e-3 ; # km
             if l_CartesianCoordPresent:
                 zYt = id_mm.variables[nm_y_t][:,:]
                 zXt = id_mm.variables[nm_x_t][:,:]
@@ -102,8 +102,8 @@ def GetModelGrid( fNCmeshmask, alsoF=False , also_e1UV=False):
             zlatT  = id_mm.variables['gphit'][0,:,:]
             ze1T   = id_mm.variables['e1t'][0,:,:] * 1.e-3 ; # km
             ze2T   = id_mm.variables['e2t'][0,:,:] * 1.e-3 ; # km
-            ze1U   = id_mm.variables['e1u'][0,:,:] * 1.e-3 ; # km
-            ze1V   = id_mm.variables['e1v'][0,:,:] * 1.e-3 ; # km
+            #ze1U   = id_mm.variables['e1u'][0,:,:] * 1.e-3 ; # km
+            #ze1V   = id_mm.variables['e1v'][0,:,:] * 1.e-3 ; # km
             if l_CartesianCoordPresent:
                 zYt = id_mm.variables[nm_y_t][0,:,:]
                 zXt = id_mm.variables[nm_x_t][0,:,:]
@@ -120,8 +120,8 @@ def GetModelGrid( fNCmeshmask, alsoF=False , also_e1UV=False):
             zlatT  = id_mm.variables['gphit'][0,0,:,:]
             ze1T   = id_mm.variables['e1t'][0,0,:,:] * 1.e-3 ; # km
             ze2T   = id_mm.variables['e2t'][0,0,:,:] * 1.e-3 ; # km
-            ze1U   = id_mm.variables['e1u'][0,0,:,:] * 1.e-3 ; # km
-            ze1V   = id_mm.variables['e1v'][0,0,:,:] * 1.e-3 ; # km
+            #ze1U   = id_mm.variables['e1u'][0,0,:,:] * 1.e-3 ; # km
+            #ze1V   = id_mm.variables['e1v'][0,0,:,:] * 1.e-3 ; # km
             if l_CartesianCoordPresent:
                 zYt = id_mm.variables[nm_y_t][0,0,:,:]
                 zXt = id_mm.variables[nm_x_t][0,0,:,:]
@@ -151,16 +151,15 @@ def GetModelGrid( fNCmeshmask, alsoF=False , also_e1UV=False):
     # Local resolution in km (for ):
     zResKM = np.zeros((nj,ni))
     zResKM[:,:] = np.sqrt( ze1T*ze1T + ze2T*ze2T )
-    del ze1T, ze2T
 
     if alsoF:
-        if also_e1UV:
-            return kmaskt, zlatT, zlonT, zYt, zXt, zYf, zXf, zResKM, ze1U, ze1V, kmaskf, zlatF, zlonF
+        if also_e1T:
+            return kmaskt, zlatT, zlonT, zYt, zXt, zYf, zXf, zResKM, ze1T, kmaskf, zlatF, zlonF
         else:
             return kmaskt, zlatT, zlonT, zYt, zXt, zYf, zXf, zResKM, kmaskf, zlatF, zlonF
     else:
-        if also_e1UV:
-            return kmaskt, zlatT, zlonT, zYt, zXt, zYf, zXf, zResKM, ze1U, ze1V
+        if also_e1T:
+            return kmaskt, zlatT, zlonT, zYt, zXt, zYf, zXf, zResKM, ze1T
         else:
             return kmaskt, zlatT, zlonT, zYt, zXt, zYf, zXf, zResKM
 

@@ -222,16 +222,16 @@ if __name__ == '__main__':
         makedirs( cd, exist_ok=True )
 
     # Getting model grid metrics and friends in the coordinates/meshmask file:
-    imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM, xe1U, xe1V = sit.GetModelGrid( cf_mm , also_e1UV=True )
+    imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM, xe1T = sit.GetModelGrid( cf_mm , also_e1T=True )
 
-    if gridType=='C' and iUVstrategy==1:
+    if gridType=='C':
         # Get extra U,V-point metrics:
         xYv, xXv, xYu, xXu = sit.GetModelUVGrid( cf_mm )
     
     # Computing the cosine and sine of rotation angle between NEMO C-grid cells and polar stereographic projection
-    _,xcosa_u,xsina_u,_,xcosa_v,xsina_v = sit.compute_distorsion_angle(xXt,xYt,xXf,xYf,xe1U,xe1V)
+    _,xcosa_t,xsina_t = sit.compute_distorsion_angle(xXu, xYu, xe1T)
 
-    del xe1U, xe1V
+    del xe1T
 
     # Allocating arrays for model data:
     (Nj,Ni) = np.shape( imaskt )
@@ -537,8 +537,8 @@ if __name__ == '__main__':
                 if idebug>0: print('      ==> displacement in model grid reference frame during `dt`: dx,dy =',dx,dy, 'm')
 
                 # => position [km] of buoy after this time step will be:
-                rx_nxt = rx + (dx*xcosa_u[jT,iT]-dy*xsina_u[jT,iT])/1000. ; # [km]
-                ry_nxt = ry + (dx*xsina_u[jT,iT]+dy*xcosa_u[jT,iT])/1000. ; # [km]
+                rx_nxt = rx + (dx*xcosa_t[jT,iT]-dy*xsina_t[jT,iT])/1000. ; # [km]
+                ry_nxt = ry + (dx*xsina_t[jT,iT]+dy*xcosa_t[jT,iT])/1000. ; # [km]
                 xPosC[jt+1,jP,:] = [ ry_nxt, rx_nxt ]
                 xmask[jt+1,jP,:] = [    1  ,    1   ]
                 if lvlist:

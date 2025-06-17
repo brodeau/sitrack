@@ -596,31 +596,41 @@ def ang(lineA, lineB):
 
     return -zang3, cosA, -sinA
 
-def compute_distorsion_angle(pXt,pYt,pXf,pYf,pe1u,pe1v):
+def compute_distorsion_angle( pXu, pYu , pe1t ):
     '''
     Compute the rotation angle between NEMO C-grid cells and polar stereographic projection
     The cosine or sine of this angle is used later on to correct the components of velocity
     or displacement vectors
     '''
 
-    (Ny,Nx) = np.shape(pXt)
+    (Ny,Nx) = np.shape(pXu)
 
-    if (np.shape(pYt)!=(Ny,Nx) or np.shape(pXf)!=(Ny,Nx) or np.shape(pYf)!=(Ny,Nx) or np.shape(pe1u)!=(Ny,Nx) or np.shape(pe1v)!=(Ny,Nx)):
+    if (np.shape(pYu)!=(Ny,Nx) or np.shape(pe1t)!=(Ny,Nx)):
         print("Problem, not all the inputs have the same dimensions") ; exit(0)
 
-    xang_u, xcos_u, xsin_u = np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double)
-    xang_v, xcos_v, xsin_v = np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double)
+    xang_t, xcos_t, xsin_t = np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double)
+    #xang_u, xcos_u, xsin_u = np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double)
+    #xang_v, xcos_v, xsin_v = np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double), np.zeros((Ny,Nx), dtype=np.double)
 
-    for jj in range(Ny):
-        for ji in range(Nx-1):
-            zLAB  = [ [pXt[jj,ji],pYt[jj,ji]], [pXt[jj,ji+1],pYt[jj,ji+1]] ]         ; # point A -> point B
-            zLAC  = [ [pXt[jj,ji],pYt[jj,ji]], [pXt[jj,ji]+pe1u[jj,ji],pYt[jj,ji]] ] ; # point A -> point A + (dx,0)
-            xang_u[jj,ji], xcos_u[jj,ji], xsin_u[jj,ji] = ang(zLAB, zLAC)
-
+    # T-point:
     for jj in range(Ny):
         for ji in range(1,Nx):
-            zLAB  = [ [pXf[jj,ji-1],pYf[jj,ji-1]], [pXf[jj,ji],pYf[jj,ji]] ]                 ; # point A -> point B
-            zLAC  = [ [pXf[jj,ji-1],pYf[jj,ji-1]], [pXf[jj,ji-1]+pe1v[jj,ji],pYf[jj,ji-1]] ] ; # point A -> point A + (dx,0)
-            xang_v[jj,ji], xcos_v[jj,ji], xsin_v[jj,ji] = ang(zLAB, zLAC)
+            zLAB  = [ [pXu[jj,ji-1],pYu[jj,ji-1]], [pXu[jj,ji],pYu[jj,ji]] ]                 ; # point A -> point B
+            zLAC  = [ [pXu[jj,ji-1],pYu[jj,ji-1]], [pXu[jj,ji-1]+pe1t[jj,ji],pYu[jj,ji-1]] ] ; # point A -> point A + (dx,0)
+            xang_t[jj,ji], xcos_t[jj,ji], xsin_t[jj,ji] = ang(zLAB, zLAC)
 
-    return xang_u, xcos_u, xsin_u, xang_v, xcos_v, xsin_v
+    # U-point:
+    #for jj in range(Ny):
+    #    for ji in range(Nx-1):
+    #        zLAB  = [ [pXt[jj,ji],pYt[jj,ji]], [pXt[jj,ji+1],pYt[jj,ji+1]] ]         ; # point A -> point B
+    #        zLAC  = [ [pXt[jj,ji],pYt[jj,ji]], [pXt[jj,ji]+pe1u[jj,ji],pYt[jj,ji]] ] ; # point A -> point A + (dx,0)
+    #        xang_u[jj,ji], xcos_u[jj,ji], xsin_u[jj,ji] = ang(zLAB, zLAC)
+
+    # V-point:
+    #for jj in range(Ny):
+    #    for ji in range(1,Nx):
+    #        zLAB  = [ [pXf[jj,ji-1],pYf[jj,ji-1]], [pXf[jj,ji],pYf[jj,ji]] ]                 ; # point A -> point B
+    #        zLAC  = [ [pXf[jj,ji-1],pYf[jj,ji-1]], [pXf[jj,ji-1]+pe1v[jj,ji],pYf[jj,ji-1]] ] ; # point A -> point A + (dx,0)
+    #        xang_v[jj,ji], xcos_v[jj,ji], xsin_v[jj,ji] = ang(zLAB, zLAC)
+
+    return xang_t, xcos_t, xsin_t
